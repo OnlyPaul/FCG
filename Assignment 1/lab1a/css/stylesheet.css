@@ -13,3 +13,7 @@
 .how-to-body li {
     list-style-type: square !important;
 }
+#WebGL-canvas {
+    width: 100%;
+    height: 100%;
+}
