@@ -1,0 +1,15 @@
+.navbar-spacing {
+    padding-top: 50px;
+}
+.side-instruct {
+    padding-left: 25px !important;
+}
+.collapsible-body {
+    background-color: #f5f5f5;
+}
+.how-to-body {
+    list-style-type: circle !important;
+}
+.how-to-body li {
+    list-style-type: square !important;
+}
