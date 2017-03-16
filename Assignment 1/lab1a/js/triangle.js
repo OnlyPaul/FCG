@@ -8,7 +8,7 @@ function initGL(canvas) {
 	} catch (e) {
 	}
 	if (!gl) {
-		alert("Could not initialise WebGL, sorry :-(");
+		alert("Could not initialise WebGL");
 	}
 }
 
@@ -97,9 +97,9 @@ function initBuffers() {
 	];
 
 	var colors = [
-		1.0, 0.0, 0.0, 1.0,
-		0.0, 1.0, 0.0, 1.0,
-		0.0, 0.0, 1.0, 1.0
+		0.937, 0.325, 0.314, 1.0,
+		0.0, 0.0, 0.0, 1.0,
+        0.937, 0.325, 0.314, 0.7
 	];
 
 	triangleVertexPositionBuffer = gl.createBuffer();
@@ -141,7 +141,7 @@ function drawScene() {
 
 function webGL_main() {
 	var canvas = document.getElementById('WebGL-canvas');
-	
+
 	initGL(canvas);
 	initShaders('vs-default', 'fs-default');
 	initBuffers();
