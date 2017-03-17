@@ -180,8 +180,9 @@ function drawScene() {
 	mvPopMatrix();
 }
 
+var myReq;
 function renderLoop() {
-    requestAnimFrame(renderLoop);
+    myReq = requestAnimFrame(renderLoop);
     drawScene();
     animate();
 }
@@ -197,4 +198,8 @@ function webGL_main() {
 	gl.enable(gl.DEPTH_TEST);
 
 	renderLoop();
+}
+
+function triangle_stop() {
+    window.cancelAnimationFrame(myReq);
 }

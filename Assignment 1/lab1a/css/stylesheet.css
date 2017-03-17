@@ -13,6 +13,9 @@
 .how-to-body li {
     list-style-type: square !important;
 }
+.center-btn {
+    text-align: center;
+}
 .canvas-container {
     border-radius: 20px;
     border: 0;
