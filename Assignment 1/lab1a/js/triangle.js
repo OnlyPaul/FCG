@@ -1,8 +1,59 @@
+/*
+*  DECLARING GLOBAL VARIABLES
+------------------------------------------------- */
 var gl;
+var shaderProgram;
+
+// model/view and projection matrix related
+var mvMatrix = mat4.create();
+var mvMatrixStack = [];
+var pMatrix = mat4.create();
+
+// variables storing triangle data
+var triangleVertexPositionBuffer;
+var triangleVertexColorBuffer;
+
+// other
+var lastTime = 0; // storing last timestamp of animation
+var rTri = 0; // refering to rotation angle of the triangle
+
+/*
+* AUXILIARY FUNCTIONS ZONE
+-------------------------------------------------- */
+function degToRad(degree) {
+    return degree*Math.PI/180;
+}
+
+function animate() {
+    var timeNow = new Date().getTime();
+    if (lastTime != 0) {
+        var elapsed = timeNow - lastTime;
+        rTri %= 360;
+        rTri += (90*elapsed) / 1000.0;
+    }
+    lastTime = timeNow;
+}
+
+function mvPushMatrix() {
+    var copy = mat4.create();
+    mat4.copy(copy, mvMatrix);
+    mvMatrixStack.push(copy);
+}
+
+function mvPopMatrix() {
+    if (mvMatrixStack.length == 0)
+        throw "Invalid Stacks. Zero member.";
+
+    mvMatrix = mvMatrixStack.pop();
+}
+
+/*
+ *  CORE FUNCTIONS ZONE
+ ------------------------------------------------- */
 
 function initGL(canvas) {
 	try {
-		gl = canvas.getContext("webgl2");
+		gl = WebGLUtils.setupWebGL(canvas);
 		gl.viewportWidth = canvas.width;
 		gl.viewportHeight = canvas.height;
 	} catch (e) {
@@ -11,7 +62,6 @@ function initGL(canvas) {
 		alert("Could not initialise WebGL");
 	}
 }
-
 
 function getShader(gl, id) {
 	var shaderScript = document.getElementById(id);
@@ -48,9 +98,6 @@ function getShader(gl, id) {
 	return shader;
 }
 
-
-var shaderProgram;
-
 function initShaders() {
 	var fragmentShader = getShader(gl, "fs-default");
 	var vertexShader = getShader(gl, "vs-default");
@@ -76,29 +123,21 @@ function initShaders() {
 	shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
 }
 
-
-var mvMatrix = mat4.create();
-var pMatrix = mat4.create();
-
 function setMatrixUniforms() {
 	gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
 	gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 }
 
-
-var triangleVertexPositionBuffer;
-var triangleVertexColorBuffer;
-
 function initBuffers() {
 	var vertices = [
-		0.0,  1.0,  -7.0,
-		-1.0, -1.0,  -7.0,
-		1.0, -1.0,  -7.0
+		 0.0,  1.0,  0.0,
+		-1.0, -1.0,  0.0,
+		 1.0, -1.0,  0.0
 	];
 
 	var colors = [
 		0.937, 0.325, 0.314, 1.0,
-		0.0, 0.0, 0.0, 1.0,
+		0.120, 0.080, 0.080, 1.0,
         0.937, 0.325, 0.314, 0.7
 	];
 
@@ -115,20 +154,19 @@ function initBuffers() {
 	triangleVertexColorBuffer.numItems = 3;
 }
 
-
-
 function drawScene() {
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	var pMatrix = mat4.create();
-	mat4.perspective(pMatrix, 45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
+	mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
 
-	var mvMatrix = mat4.create();
 	mat4.identity(mvMatrix);
 
-	gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
-	gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
+	mat4.scale(mvMatrix, mvMatrix, [0.5, 0.5, 0.5]);
+
+	mvPushMatrix();
+
+	mat4.rotate(mvMatrix, mvMatrix, degToRad(rTri), [0, 1, 0]);
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
 	gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
@@ -136,17 +174,27 @@ function drawScene() {
 	gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexColorBuffer);
 	gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, triangleVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
+	setMatrixUniforms();
 	gl.drawArrays(gl.TRIANGLES, 0, triangleVertexPositionBuffer.numItems);
+
+	mvPopMatrix();
+}
+
+function renderLoop() {
+    requestAnimFrame(renderLoop);
+    drawScene();
+    animate();
 }
 
 function webGL_main() {
 	var canvas = document.getElementById('WebGL-canvas');
 
 	initGL(canvas);
-	initShaders('vs-default', 'fs-default');
+	initShaders();
 	initBuffers();
 
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	gl.enable(gl.DEPTH_TEST);
 
-	drawScene();
+	renderLoop();
 }
