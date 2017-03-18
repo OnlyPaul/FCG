@@ -8,7 +8,7 @@ function drawScene_3d(deg) {
 
     mat4.identity(mvMatrix);
 
-    mat4.scale(mvMatrix, mvMatrix, [0.5, 0.5, 0.5]);
+    //mat4.scale(mvMatrix, mvMatrix, [0.5, 0.5, 0.5]);
     /*mat4.translate(mvMatrix, mvMatrix, [-0.8, 0.0, 0.0]);
 
     mvPushMatrix();
@@ -28,15 +28,15 @@ function drawScene_3d(deg) {
     mvPopMatrix();*/
 
     var cubePos = [
-        [-1.2,  1.2,  0.0],
-        [ 0.0,  1.2,  0.0],
-        [ 1.2,  1.2,  0.0],
-        [-1.2,  0.0,  0.0],
+        [-0.6,  0.6,  0.0],
+        [ 0.0,  0.6,  0.0],
+        [ 0.6,  0.6,  0.0],
+        [-0.6,  0.0,  0.0],
         [ 0.0,  0.0,  0.0],
-        [ 1.2,  0.0,  0.0],
-        [-1.2, -1.2,  0.0],
-        [ 0.0, -1.2,  0.0],
-        [ 1.2, -1.2,  0.0]
+        [ 0.6,  0.0,  0.0],
+        [-0.6, -0.6,  0.0],
+        [ 0.0, -0.6,  0.0],
+        [ 0.6, -0.6,  0.0]
     ];
 
     // 1st cube
