@@ -10,29 +10,44 @@
     <script type="text/javascript" src="vendor/gl-matrix.js"></script>
     <script type="text/javascript" src="vendor/webgl-utils.js"></script>
     <script type="text/javascript" src="vendor/materialize/js/materialize.min.js"></script>
-    <script type="text/javascript" src="js/3d/three-d-gl.js"></script>
-    <!--
-    <script type="text/javascript">
-        var i=0;
-        document.addEventListener("keydown", function (event) {
-            var str = document.getElementById('invis').innerHTML;
-            if (event.key == 'Delete') str = str.slice(0, -1);
-            else str += event.key;
-            document.getElementById('invis').innerHTML = str;
-        });
-        document.addEventListener("keyup", function (event) {
 
-        });
+    <!-- utilities and key binding -->
+    <script type="text/javascript" src="js/object-switch.js"></script>
+
+    <!-- WebGL related codes go from here on -->
+    <script type="text/javascript" src="js/canvasInit.js"></script>
+    <script type="text/javascript" src="js/triangle-anim.js"></script>
+    <script type="text/javascript" src="js/three-d-gl.js"></script>
+    <script id="vs-default" type="x-shader/x-vertex">
+        attribute vec3 aVertexPosition;
+        attribute vec4 aVertexColor;
+
+        uniform mat4 uMVMatrix;
+        uniform mat4 uPMatrix;
+
+        varying vec4 vColor;
+
+        void main(void) {
+            gl_Position = uPMatrix*uMVMatrix*vec4(aVertexPosition, 1.0);
+            vColor = aVertexColor;
+        }
     </script>
-    -->
+    <script id="fs-default" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec4 vColor;
+
+        void main(void) {
+            gl_FragColor = vColor;
+        }
+    </script>
 </head>
-<body>
+<body onload="webGL_main()">
     <div class="navbar-fixed">
         <nav>
             <div class="nav-wrapper">
                 <ul id="nav-mobile" class="right hide-on-med-and-down">
-                    <li><a href="triangle.html">Simple Triangle</a></li>
-                    <li class="active"><a href="three-d.html">3D Shapes with Interactions<i class="left material-icons">games</i></a></li>
+                    <li id="tri-menu" class="active"><a href="#" onclick="switch_to_triangle()">Simple Triangle</a></li>
+                    <li id="3d-menu"><a href="#" onclick="switch_to_3d()">3D Shapes with Interactions<i class="left material-icons">games</i></a></li>
                 </ul>
             </div>
         </nav>
@@ -41,22 +56,44 @@
     <div class="container navbar-spacing">
         <div class="row">
             <div class="col s7">
-                <div style="width: 100%; height: 480px; background-color: #000000;"></div>
+                <div class="canvas-container">
+                    <canvas id="WebGL-canvas" width="1200" height="900"></canvas>
+                </div>
             </div>
             <div class="col s5 side-instruct">
-                <ul class="collapsible" data-collapsible="accordion">
+                <ul id="tri-infotab" class="collapsible" data-collapsible="accordion">
                     <li>
                         <div class="collapsible-header active"><i class="left material-icons">assignment</i>Assignment</div>
                         <div class="collapsible-body">
-                            <span>
-                                <p style="font-weight: bold;">Adding 3D shapes</p>
-                                Create a scene with 9 3D shapes which can be seen from the camera.
-                                The shapes should be 3D and not flat. Each face should be a different colour so that
-                                transformations can more easily be seen.
-                                <br>
-                                <p style="font-weight: bold;">Add simple user interaction with the shapes</p>
-                                Respond to user interaction from the keyboard. Including:
-                            </span>
+                                <span>
+                                    <p style="font-weight: bold;">Set up a drawing window and draw a simple box</p>
+                                    Set up a basic WebGL program, which initializes the drawing window. Draw a simple triangle.
+                                </span>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="left material-icons">list</i>How to use</div>
+                        <div class="collapsible-body">
+                                <span>
+                                    There's no instruction on how to use the program.
+                                    This just shows a simple triangle with no interactive features at all.
+                                </span>
+                        </div>
+                    </li>
+                </ul>
+                <ul id="3d-infotab" style="display: none;" class="collapsible" data-collapsible="accordion">
+                    <li>
+                        <div class="collapsible-header active"><i class="left material-icons">assignment</i>Assignment</div>
+                        <div class="collapsible-body">
+                <span>
+                    <p style="font-weight: bold;">Adding 3D shapes</p>
+                    Create a scene with 9 3D shapes which can be seen from the camera.
+                    The shapes should be 3D and not flat. Each face should be a different colour so that
+                    transformations can more easily be seen.
+                    <br>
+                    <p style="font-weight: bold;">Add simple user interaction with the shapes</p>
+                    Respond to user interaction from the keyboard. Including:
+                </span>
                             <ul class="browser-default">
                                 <li style="list-style-type: circle !important;">Selection</li>
                                 <li style="list-style-type: circle !important;">Scaling</li>
