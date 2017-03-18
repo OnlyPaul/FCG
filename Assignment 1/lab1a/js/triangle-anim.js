@@ -18,12 +18,6 @@ function animate_triangle() {
     lastTime = timeNow;
 }
 
-function mvPushMatrix() {
-    var copy = mat4.create();
-    mat4.copy(copy, mvMatrix);
-    mvMatrixStack.push(copy);
-}
-
 /*
  *  CORE FUNCTIONS ZONE
  ------------------------------------------------- */

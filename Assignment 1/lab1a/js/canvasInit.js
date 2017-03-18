@@ -9,9 +9,12 @@ var mvMatrix = mat4.create();
 var mvMatrixStack = [];
 var pMatrix = mat4.create();
 
-// variables storing triangle data
+// buffer storing triangle data
 var triangleVertexPositionBuffer;
 var triangleVertexColorBuffer;
+
+var triangleVertexPositionBuffer2;
+var triangleVertexColorBuffer2;
 
 /*
  * AUXILIARY FUNCTIONS ZONE
@@ -138,6 +141,30 @@ function initBuffers() {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
     triangleVertexColorBuffer.itemSize = 4;
     triangleVertexColorBuffer.numItems = 3;
+
+    vertices = [
+        0.0,  0.5,  0.0,
+        -0.5, -0.5,  0.0,
+        0.5, -0.5,  0.0
+    ];
+
+    colors = [
+        0.937, 0.325, 0.314, 1.0,
+        0.120, 0.080, 0.080, 1.0,
+        0.937, 0.325, 0.314, 0.7
+    ];
+
+    triangleVertexPositionBuffer2 = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer2);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    triangleVertexPositionBuffer2.itemSize = 3;
+    triangleVertexPositionBuffer2.numItems = 3;
+
+    triangleVertexColorBuffer2 = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexColorBuffer2);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+    triangleVertexColorBuffer2.itemSize = 4;
+    triangleVertexColorBuffer2.numItems = 3;
 }
 
 function webGL_main() {

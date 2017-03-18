@@ -22,5 +22,5 @@ function switch_to_3d() {
     document.getElementById('3d-infotab').style.display = '';
 
 	triangle_stop();
-	drawScene_3d();
+	drawScene_3d(0);
 }
