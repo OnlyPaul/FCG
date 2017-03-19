@@ -9,6 +9,7 @@ function switch_to_triangle() {
     document.getElementById('3d-infotab').style.display = 'none';
 
 	renderLoop_triangle();
+	unbindKey();
 }
 
 function switch_to_3d() {
@@ -23,4 +24,5 @@ function switch_to_3d() {
 
 	triangle_stop();
 	drawScene_3d();
+	bindKey();
 }

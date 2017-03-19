@@ -56,5 +56,6 @@ function renderLoop_triangle() {
 }
 
 function triangle_stop() {
-    window.cancelAnimationFrame(myReq);
+    //window.cancelAnimationFrame(myReq);
+	cancelAnimFrame(myReq);
 }
