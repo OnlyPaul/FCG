@@ -1,32 +1,13 @@
 var test = 0;
+var tr = 0;
 
-function drawScene_3d(deg) {
+function drawScene_3d() {
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.enable(gl.DEPTH_TEST);
 
     mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
 
     mat4.identity(mvMatrix);
-
-    //mat4.scale(mvMatrix, mvMatrix, [0.5, 0.5, 0.5]);
-    /*mat4.translate(mvMatrix, mvMatrix, [-0.8, 0.0, 0.0]);
-
-    mvPushMatrix();
-
-    mat4.translate(mvMatrix, mvMatrix, [-0.8, 0.0, 0.0]);
-    mat4.rotate(mvMatrix, mvMatrix, degToRad(-deg), [0, 1, 0]);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexColorBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, triangleVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-    setMatrixUniforms();
-    gl.drawArrays(gl.TRIANGLES, 0, triangleVertexPositionBuffer.numItems);
-
-    mvPopMatrix();*/
 
     var cubePos = [
         [-0.6,  0.6,  0.0],
@@ -40,6 +21,48 @@ function drawScene_3d(deg) {
         [ 0.6, -0.6,  0.0]
     ];
 
+    var n_cube = 9;
+
+    // bind cubes' buffers
+    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, cubeVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexColorBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, cubeVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
+
+    for (i=0; i<n_cube; i++) {
+        mvPushMatrix();
+        mat4.translate(mvMatrix, mvMatrix, cubePos[i]);
+        mat4.rotate(mvMatrix, mvMatrix, degToRad(test), [1, 1, 1]);
+        mat4.translate(mvMatrix, mvMatrix, [tr, 0, 0]);
+        setMatrixUniforms();
+        gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+        mvPopMatrix();
+    }
+
+    // bind axis line buffers
+    gl.disable(gl.DEPTH_TEST);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, axisVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, axisVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, axisVertexColorBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, axisVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+    for (i=0; i<n_cube; i++) {
+        mvPushMatrix();
+        mat4.translate(mvMatrix, mvMatrix, cubePos[i]);
+        mat4.rotate(mvMatrix, mvMatrix, degToRad(test), [1, 1, 1]);
+        setMatrixUniforms();
+        gl.drawArrays(gl.LINES, 0, axisVertexPositionBuffer.numItems);
+        mvPopMatrix();
+    }
+
+    gl.enable(gl.DEPTH_TEST);
+
+    /*
     // 1st cube
     mvPushMatrix();
     mat4.translate(mvMatrix, mvMatrix, cubePos[0]);
@@ -164,13 +187,13 @@ function drawScene_3d(deg) {
     mat4.translate(mvMatrix, mvMatrix, cubePos[7]);
     mat4.rotate(mvMatrix, mvMatrix, degToRad(deg), [1, 1, 1]);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, cubeVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    //gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
+    //gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, cubeVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexColorBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, cubeVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    //gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexColorBuffer);
+    //gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, cubeVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
+    //gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
     setMatrixUniforms();
     gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
@@ -193,6 +216,7 @@ function drawScene_3d(deg) {
 
     mvPopMatrix();
 
+
     // test axis lines
 
     gl.disable(gl.DEPTH_TEST);
@@ -210,7 +234,7 @@ function drawScene_3d(deg) {
     setMatrixUniforms();
     gl.drawArrays(gl.LINES, 0, axisVertexPositionBuffer.numItems);
 
-    mvPopMatrix();
+    mvPopMatrix(); */
 
     /*mvPushMatrix();
     //console.log('baka1');
@@ -236,5 +260,10 @@ function drawScene_3d(deg) {
 function rotate_mini_tri() {
     test += 2;
     test %= 360;
-    drawScene_3d(test);
+    drawScene_3d();
+}
+
+function test_tr() {
+    tr += 0.01;
+    drawScene_3d();
 }
