@@ -238,7 +238,7 @@ function initBuffers() {
 
         // line along z-axis
         0.0, 0.0, 0.0,
-        0.0, 0.0, 0.1
+        0.0, 0.0, -0.1
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     axisVertexPositionBuffer.itemSize = 3;
