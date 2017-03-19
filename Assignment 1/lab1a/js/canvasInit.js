@@ -13,10 +13,12 @@ var pMatrix = mat4.create();
 var triangleVertexPositionBuffer;
 var triangleVertexColorBuffer;
 
+// buffer for the cubes
 var cubeVertexPositionBuffer;
 var cubeVertexColorBuffer;
 var cubeVertexIndexBuffer;
 
+// buffer for the overlaying axes
 var axisVertexPositionBuffer;
 var axisVertexColorBuffer;
 
@@ -125,6 +127,7 @@ function initBuffers() {
     var vertices = [];
     var colors = [];
 
+    // create and bind triangle's buffer
     triangleVertexPositionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
     vertices = [
@@ -147,6 +150,7 @@ function initBuffers() {
     triangleVertexColorBuffer.itemSize = 4;
     triangleVertexColorBuffer.numItems = 3;
 
+    // create and bind cubes' buffer
     cubeVertexPositionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
     vertices = [
@@ -225,6 +229,7 @@ function initBuffers() {
     cubeVertexIndexBuffer.itemSize = 1;
     cubeVertexIndexBuffer.numItems = 36;
 
+    // create and bind axis-lines' buffer
     axisVertexPositionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, axisVertexPositionBuffer);
     vertices = [
@@ -236,9 +241,10 @@ function initBuffers() {
         0.0, 0.0, 0.0,
         0.0, 0.1, 0.0,
 
-        // line along z-axis
+        // line along z-axis, I don't know why but it must be -0.1 to produce
+        // z-axis that points out in the direction of (X x Y)
         0.0, 0.0, 0.0,
-        0.0, 0.0, -0.1
+        0.0, 0.0, 0.1
     ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     axisVertexPositionBuffer.itemSize = 3;
@@ -269,5 +275,6 @@ function webGL_main() {
     gl.clearColor(0.950, 0.950, 0.950, 1.0);
     gl.enable(gl.DEPTH_TEST);
 
+    // onload, to get things running when users enter the website
     renderLoop_triangle();
 }

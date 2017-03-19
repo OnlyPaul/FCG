@@ -17,8 +17,8 @@
 
     <!-- WebGL related codes go from here on -->
     <script type="text/javascript" src="js/canvasInit.js"></script>
-    <script type="text/javascript" src="js/triangle-anim.js"></script>
-    <script type="text/javascript" src="js/three-d-gl.js"></script>
+    <script type="text/javascript" src="js/triangle-gl.js"></script>
+    <script type="text/javascript" src="js/3d-shapes-gl.js"></script>
     <script id="vs-default" type="x-shader/x-vertex">
         attribute vec3 aVertexPosition;
         attribute vec4 aVertexColor;
@@ -47,8 +47,8 @@
         <nav>
             <div class="nav-wrapper">
                 <ul id="nav-mobile" class="right hide-on-med-and-down">
-                    <li id="tri-menu" class="active"><a href="#" onclick="switch_to_triangle()">Simple Triangle</a></li>
-                    <li id="3d-menu"><a href="#" onclick="switch_to_3d()">3D Shapes with Interactions<i class="left material-icons">games</i></a></li>
+                    <li id="tri-menu" class="active"><a onclick="switch_to_triangle()">Simple Triangle</a></li>
+                    <li id="3d-menu"><a onclick="switch_to_3d()">3D Shapes with Interactions<i class="left material-icons">games</i></a></li>
                 </ul>
             </div>
         </nav>
@@ -125,7 +125,7 @@
                                     </ul>
                                 </li>
                                 <li class="how-to-body">
-                                    <b>Rotation</b> (center of the rotation is the CS of the shape.
+                                    <b>Rotation</b>
                                     <ul class="browser-default">
                                         <li> "w": rotate the current shape clockwise about the x-axis</li>
                                         <li> "s": rotate the current shape counterclockwise about the x-axis</li>
