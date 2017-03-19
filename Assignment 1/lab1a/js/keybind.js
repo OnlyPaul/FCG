@@ -11,71 +11,6 @@ var keydown_handler = function(e) {
         e.key == '8' || e.key == '9' )
         change_selection(e.key);
     operate();
-    /*switch (e.key) {
-     case '0':
-     break;
-     case '1':
-     break;
-     case '2':
-     break;
-     case '3':
-     break;
-     case '4':
-     break;
-     case '5':
-     break;
-     case '6':
-     break;
-     case '7':
-     break;
-     case '8':
-     break;
-     case '9':
-     break;
-     case 'x':
-     console.log('small');
-     break;
-     case 'X':
-     console.log('big');
-     break;
-     case 'y':
-     break;
-     case 'Y':
-     break;
-     case 'z':
-     break;
-     case 'Z':
-     break;
-     case 'w':
-     break;
-     case 's':
-     break;
-     case 'e':
-     break;
-     case 'q':
-     break;
-     case 'd':
-     break;
-     case 'a':
-     break;
-     case 'ArrowRight':
-     break;
-     case 'ArrowLeft':
-     break;
-     case 'ArrowUp':
-     break;
-     case 'ArrowDown':
-     break;
-     case ',':
-     break;
-     case '.':
-     break;
-     case '-':
-     rotate_mini_tri();
-     break;
-     default:
-     console.log(e.key);
-     }*/
 };
 
 var keyup_handler = function(e) {
@@ -121,13 +56,17 @@ function change_selection(key) {
 }
 
 function operate() {
-    var i = map['a'] ? 1:0;
-    var j = map['s'] ? 1:0;
-    var k = map['d'] ? 1:0;
-
     if (map['w'] || map['s'] || map['e'] ||
         map['q'] || map['d'] || map['a'])
         rotate_shapes();
+
+    if (map['ArrowRight'] || map['ArrowLeft'] || map['ArrowUp'] ||
+        map['ArrowDown'] || map[','] || map['.'])
+        translate_shapes();
+
+    if (map['x'] || map['X'] || map['y'] ||
+        map['Y'] || map['z'] || map['Z'])
+        scale_shapes();
 
     if (map['.'])
         test_tr();
