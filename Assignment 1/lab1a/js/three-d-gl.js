@@ -3,6 +3,7 @@ var test = 0;
 function drawScene_3d(deg) {
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.DEPTH_TEST);
 
     mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
 
@@ -191,6 +192,26 @@ function drawScene_3d(deg) {
     gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 
     mvPopMatrix();
+
+    // test axis lines
+
+    gl.disable(gl.DEPTH_TEST);
+    mvPushMatrix();
+
+    mat4.translate(mvMatrix, mvMatrix, cubePos[0]);
+    mat4.rotate(mvMatrix, mvMatrix, degToRad(deg), [1, 1, 1]);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, axisVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, axisVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, axisVertexColorBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, axisVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+    setMatrixUniforms();
+    gl.drawArrays(gl.LINES, 0, axisVertexPositionBuffer.numItems);
+
+    mvPopMatrix();
+
     /*mvPushMatrix();
     //console.log('baka1');
     mat4.translate(mvMatrix, mvMatrix, [0.5, 0.0, 0.0]);

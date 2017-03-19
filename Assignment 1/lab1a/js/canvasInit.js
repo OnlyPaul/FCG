@@ -17,6 +17,10 @@ var cubeVertexPositionBuffer;
 var cubeVertexColorBuffer;
 var cubeVertexIndexBuffer;
 
+var axisVertexPositionBuffer;
+var axisVertexColorBuffer;
+var axisVertexIndexBuffer;
+
 /*
  * AUXILIARY FUNCTIONS ZONE
  -------------------------------------------------- */
@@ -119,26 +123,27 @@ function setMatrixUniforms() {
 }
 
 function initBuffers() {
-    var vertices = [
+    var vertices = [];
+    var colors = [];
+
+    triangleVertexPositionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
+    vertices = [
         0.0,  1.0,  0.0,
         -1.0, -1.0,  0.0,
         1.0, -1.0,  0.0
     ];
-
-    var colors = [
-        0.937, 0.325, 0.314, 1.0,
-        0.120, 0.080, 0.080, 1.0,
-        0.937, 0.325, 0.314, 0.7
-    ];
-
-    triangleVertexPositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     triangleVertexPositionBuffer.itemSize = 3;
     triangleVertexPositionBuffer.numItems = 3;
 
     triangleVertexColorBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexColorBuffer);
+    colors = [
+        0.937, 0.325, 0.314, 1.0,
+        0.120, 0.080, 0.080, 1.0,
+        0.937, 0.325, 0.314, 0.7
+    ];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
     triangleVertexColorBuffer.itemSize = 4;
     triangleVertexColorBuffer.numItems = 3;
@@ -189,12 +194,12 @@ function initBuffers() {
     cubeVertexColorBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexColorBuffer);
     colors = [
-        [1.0, 0.0, 0.0, 1.0], // Front face
-        [1.0, 1.0, 0.0, 1.0], // Back face
-        [0.0, 1.0, 0.0, 1.0], // Top face
-        [1.0, 0.5, 0.5, 1.0], // Bottom face
-        [1.0, 0.0, 1.0, 1.0], // Right face
-        [0.0, 0.0, 1.0, 1.0]  // Left face
+        [0.996, 0.410, 0.379, 1.0], // Front face
+        [1.0, 0.5, 0.5, 1.0], // Back face
+        [0.465, 0.742, 0.465, 1.0], // Top face
+        [0.988, 0.988, 0.586, 1.0], // Bottom face
+        [0.793, 0.598, 0.785, 1.0], // Right face
+        [0.680, 0.773, 0.809, 1.0]  // Left face
     ];
     var unpackedColors = [];
     for (var i in colors) {
@@ -220,6 +225,39 @@ function initBuffers() {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertexIndices), gl.STATIC_DRAW);
     cubeVertexIndexBuffer.itemSize = 1;
     cubeVertexIndexBuffer.numItems = 36;
+
+    axisVertexPositionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, axisVertexPositionBuffer);
+    vertices = [
+        // line along x-axis
+        0.0, 0.0, 0.0,
+        0.1, 0.0, 0.0,
+
+        // line along y-axis
+        0.0, 0.0, 0.0,
+        0.0, 0.1, 0.0,
+
+        // line along z-axis
+        0.0, 0.0, 0.0,
+        0.0, 0.0, 0.1
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    axisVertexPositionBuffer.itemSize = 3;
+    axisVertexPositionBuffer.numItems = 6;
+
+    axisVertexColorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, axisVertexColorBuffer);
+    colors = [
+        1.0, 0.0, 0.0, 1.0,
+        1.0, 0.0, 0.0, 1.0,
+        0.0, 1.0, 0.0, 1.0,
+        0.0, 1.0, 0.0, 1.0,
+        0.0, 0.0, 1.0, 1.0,
+        0.0, 0.0, 1.0, 1.0
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+    axisVertexColorBuffer.itemSize = 4;
+    axisVertexColorBuffer.numItems = 6;
 }
 
 function webGL_main() {
