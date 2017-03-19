@@ -19,7 +19,6 @@ var cubeVertexIndexBuffer;
 
 var axisVertexPositionBuffer;
 var axisVertexColorBuffer;
-var axisVertexIndexBuffer;
 
 /*
  * AUXILIARY FUNCTIONS ZONE

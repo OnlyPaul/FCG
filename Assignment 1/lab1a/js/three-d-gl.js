@@ -105,15 +105,17 @@ function drawScene_3d() {
 	gl.bindBuffer(gl.ARRAY_BUFFER, axisVertexColorBuffer);
 	gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, axisVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-	// global CS axis
+	// global CS axes
 	if (obj_selection[0]) {
 		mvPushMatrix();
 		mat4.scale(mvMatrix, mvMatrix, [2.5, 2.5, 2.5]);
+		mat4.scale(mvMatrix, mvMatrix, [1/scCubeStack[0].x, 1/scCubeStack[0].y, 1/scCubeStack[0].z]);
 		setMatrixUniforms();
 		gl.drawArrays(gl.LINES, 0, axisVertexPositionBuffer.numItems);
 		mvPopMatrix();
 	}
 
+	// individual CS axes
 	for (i=0; i<n_cube; i++) {
 		if (obj_selection[i+1]) {
 			mvPushMatrix();
