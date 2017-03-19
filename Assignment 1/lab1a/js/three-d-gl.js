@@ -1,5 +1,17 @@
-var rCubeStack = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-var tr = 0;
+var rCubeStack = {
+    0: { 'x': 0, 'y': 0, 'z': 0 },
+    1: { 'x': 0, 'y': 0, 'z': 0 },
+    2: { 'x': 0, 'y': 0, 'z': 0 },
+    3: { 'x': 0, 'y': 0, 'z': 0 },
+    4: { 'x': 0, 'y': 0, 'z': 0 },
+    5: { 'x': 0, 'y': 0, 'z': 0 },
+    6: { 'x': 0, 'y': 0, 'z': 0 },
+    7: { 'x': 0, 'y': 0, 'z': 0 },
+    8: { 'x': 0, 'y': 0, 'z': 0 },
+    9: { 'x': 0, 'y': 0, 'z': 0 }
+}; // store rotation information
+var trCubeStack = []; // store translation information
+var scCubeStack = []; // store scaling information
 
 function drawScene_3d() {
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
@@ -8,7 +20,9 @@ function drawScene_3d() {
     mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
 
     mat4.identity(mvMatrix);
-    mat4.rotate(mvMatrix, mvMatrix, degToRad(rCubeStack[0]), [1, 1, 1]);
+    mat4.rotateX(mvMatrix, mvMatrix, degToRad(rCubeStack[0].x));
+    mat4.rotateY(mvMatrix, mvMatrix, degToRad(rCubeStack[0].y));
+    mat4.rotateZ(mvMatrix, mvMatrix, degToRad(rCubeStack[0].z));
 
     var cubePos = [
         [-0.6,  0.6,  0.0],
@@ -35,9 +49,13 @@ function drawScene_3d() {
 
     for (i=0; i<n_cube; i++) {
         mvPushMatrix();
-        mat4.translate(mvMatrix, mvMatrix, cubePos[i]);
-        mat4.rotate(mvMatrix, mvMatrix, degToRad(rCubeStack[i+1]), [1, 1, 1]);
-        mat4.translate(mvMatrix, mvMatrix, [tr, 0, 0]);
+        mat4.translate(mvMatrix, mvMatrix, cubePos[i]); // move to its position
+
+        // the transitions after this are controlled by the user
+        mat4.rotateX(mvMatrix, mvMatrix, degToRad(rCubeStack[i+1].x));
+        mat4.rotateY(mvMatrix, mvMatrix, degToRad(rCubeStack[i+1].y));
+        mat4.rotateZ(mvMatrix, mvMatrix, degToRad(rCubeStack[i+1].z));
+
         setMatrixUniforms();
         gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
         mvPopMatrix();
@@ -52,17 +70,6 @@ function drawScene_3d() {
     gl.bindBuffer(gl.ARRAY_BUFFER, axisVertexColorBuffer);
     gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, axisVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-    for (i=0; i<n_cube; i++) {
-        if (obj_selection[i+1]) {
-            mvPushMatrix();
-            mat4.translate(mvMatrix, mvMatrix, cubePos[i]);
-            mat4.rotate(mvMatrix, mvMatrix, degToRad(rCubeStack[i + 1]), [1, 1, 1]);
-            setMatrixUniforms();
-            gl.drawArrays(gl.LINES, 0, axisVertexPositionBuffer.numItems);
-            mvPopMatrix();
-        }
-    }
-
     // global CS axis
     if (obj_selection[0]) {
         mvPushMatrix();
@@ -72,21 +79,57 @@ function drawScene_3d() {
         mvPopMatrix();
     }
 
-    gl.enable(gl.DEPTH_TEST);
-}
+    for (i=0; i<n_cube; i++) {
+        if (obj_selection[i+1]) {
+            mvPushMatrix();
+            mat4.translate(mvMatrix, mvMatrix, cubePos[i]); // analog to the cubes
 
-function rotate_mini_tri() {
-    for (i=0; i<=9; i++) {
-        if (obj_selection[i]) {
-            rCubeStack[i] += 2;
-            rCubeStack[i] %= 360;
+            // the transitions after this are controlled by the user
+            mat4.rotateX(mvMatrix, mvMatrix, degToRad(rCubeStack[i+1].x));
+            mat4.rotateY(mvMatrix, mvMatrix, degToRad(rCubeStack[i+1].y));
+            mat4.rotateZ(mvMatrix, mvMatrix, degToRad(rCubeStack[i+1].z));
+
+            setMatrixUniforms();
+            gl.drawArrays(gl.LINES, 0, axisVertexPositionBuffer.numItems);
+            mvPopMatrix();
         }
     }
 
+    gl.enable(gl.DEPTH_TEST);
+}
+
+function rotate_shapes() {
+    for (i=0; i<=9; i++) {
+        if (obj_selection[i]) {
+            if (map['w']) {
+                rCubeStack[i].x += 2;
+                rCubeStack[i].x %= 360;
+            }
+            if (map['s']) {
+                rCubeStack[i].x -= 2;
+                rCubeStack[i].x %= 360;
+            }
+            if (map['e']) {
+                rCubeStack[i].y += 2;
+                rCubeStack[i].y %= 360;
+            }
+            if (map['q']) {
+                rCubeStack[i].y -= 2;
+                rCubeStack[i].y %= 360;
+            }
+            if (map['d']) {
+                rCubeStack[i].z -= 2;
+                rCubeStack[i].z %= 360;
+            }
+            if (map['a']) {
+                rCubeStack[i].z += 2;
+                rCubeStack[i].z %= 360;
+            }
+        }
+    }
     drawScene_3d();
 }
 
 function test_tr() {
-    tr += 0.01;
     drawScene_3d();
 }

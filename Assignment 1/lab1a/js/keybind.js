@@ -125,10 +125,10 @@ function operate() {
     var j = map['s'] ? 1:0;
     var k = map['d'] ? 1:0;
 
-    if (map['-'])
-        rotate_mini_tri();
+    if (map['w'] || map['s'] || map['e'] ||
+        map['q'] || map['d'] || map['a'])
+        rotate_shapes();
 
     if (map['.'])
         test_tr();
-    console.log('(' + i + ', ' + j + ', ' + k + ')');
 }
