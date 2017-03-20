@@ -1,17 +1,3 @@
-// store rotation information
-var rCubeStack = {
-	0: { 'x': 0, 'y': 0, 'z': 0 },
-	1: { 'x': 0, 'y': 0, 'z': 0 },
-	2: { 'x': 0, 'y': 0, 'z': 0 },
-	3: { 'x': 0, 'y': 0, 'z': 0 },
-	4: { 'x': 0, 'y': 0, 'z': 0 },
-	5: { 'x': 0, 'y': 0, 'z': 0 },
-	6: { 'x': 0, 'y': 0, 'z': 0 },
-	7: { 'x': 0, 'y': 0, 'z': 0 },
-	8: { 'x': 0, 'y': 0, 'z': 0 },
-	9: { 'x': 0, 'y': 0, 'z': 0 }
-};
-
 // store translation information
 // start the system with z = -2.8 to compensate the perspective
 var trCubeStack = {
@@ -41,18 +27,24 @@ var scCubeStack = {
 	9: { 'x': 1, 'y': 1, 'z': 1 }
 };
 
+var rotMatArray = [];
+for (i=0; i<10; i++) {
+    rotMatArray.push(mat4.create());
+    mat4.identity(rotMatArray[i]);
+
+}
+
 function drawScene_3d() {
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 	mat4.perspective(pMatrix, degToRad(45), gl.viewportWidth / gl.viewportHeight, 0.01, 2000.0);
+	//mat4.ortho(pMatrix, -1, 1, -1, 1, 0.01, 2000);
 
 	mat4.identity(mvMatrix);
 
     mat4.translate(mvMatrix, mvMatrix, [trCubeStack[0].x, trCubeStack[0].y, trCubeStack[0].z]);
-	mat4.rotateX(mvMatrix, mvMatrix, degToRad(rCubeStack[0].x));
-	mat4.rotateY(mvMatrix, mvMatrix, degToRad(rCubeStack[0].y));
-	mat4.rotateZ(mvMatrix, mvMatrix, degToRad(rCubeStack[0].z));
+    mat4.multiply(mvMatrix, mvMatrix, rotMatArray[0]);
 	mat4.scale(mvMatrix, mvMatrix, [scCubeStack[0].x, scCubeStack[0].y, scCubeStack[0].z]);
 
 	var cubePos = [
@@ -84,11 +76,7 @@ function drawScene_3d() {
 
 		// the transitions after this are controlled by the user
         mat4.translate(mvMatrix, mvMatrix, [trCubeStack[i+1].x, trCubeStack[i+1].y, trCubeStack[i+1].z]);
-
-		mat4.rotateX(mvMatrix, mvMatrix, degToRad(rCubeStack[i+1].x));
-		mat4.rotateY(mvMatrix, mvMatrix, degToRad(rCubeStack[i+1].y));
-		mat4.rotateZ(mvMatrix, mvMatrix, degToRad(rCubeStack[i+1].z));
-
+        mat4.multiply(mvMatrix, mvMatrix, rotMatArray[i+1]);
         mat4.scale(mvMatrix, mvMatrix, [scCubeStack[i+1].x, scCubeStack[i+1].y, scCubeStack[i+1].z]);
 
 		setMatrixUniforms();
@@ -123,10 +111,7 @@ function drawScene_3d() {
 
 			// the transitions after this are controlled by the user
             mat4.translate(mvMatrix, mvMatrix, [trCubeStack[i+1].x, trCubeStack[i+1].y, trCubeStack[i+1].z]);
-
-			mat4.rotateX(mvMatrix, mvMatrix, degToRad(rCubeStack[i+1].x));
-			mat4.rotateY(mvMatrix, mvMatrix, degToRad(rCubeStack[i+1].y));
-			mat4.rotateZ(mvMatrix, mvMatrix, degToRad(rCubeStack[i+1].z));
+            mat4.multiply(mvMatrix, mvMatrix, rotMatArray[i+1]);
 
 			setMatrixUniforms();
 			gl.drawArrays(gl.LINES, 0, axisVertexPositionBuffer.numItems);
@@ -141,28 +126,22 @@ function rotate_shapes() {
 	for (i=0; i<=9; i++) {
 		if (obj_selection[i]) {
 			if (map['w']) {
-				rCubeStack[i].x -= 2;
-				rCubeStack[i].x %= 360;
+				mat4.rotateX(rotMatArray[i], rotMatArray[i], degToRad(-2));
 			}
 			if (map['s']) {
-				rCubeStack[i].x += 2;
-				rCubeStack[i].x %= 360;
+                mat4.rotateX(rotMatArray[i], rotMatArray[i], degToRad(2));
 			}
 			if (map['e']) {
-				rCubeStack[i].y -= 2;
-				rCubeStack[i].y %= 360;
+                mat4.rotateY(rotMatArray[i], rotMatArray[i], degToRad(-2));
 			}
 			if (map['q']) {
-				rCubeStack[i].y += 2;
-				rCubeStack[i].y %= 360;
+                mat4.rotateY(rotMatArray[i], rotMatArray[i], degToRad(2));
 			}
 			if (map['d']) {
-				rCubeStack[i].z -= 2;
-				rCubeStack[i].z %= 360;
+                mat4.rotateZ(rotMatArray[i], rotMatArray[i], degToRad(-2));
 			}
 			if (map['a']) {
-				rCubeStack[i].z += 2;
-				rCubeStack[i].z %= 360;
+                mat4.rotateZ(rotMatArray[i], rotMatArray[i], degToRad(2));
 			}
 		}
 	}

@@ -241,8 +241,7 @@ function initBuffers() {
         0.0, 0.0, 0.0,
         0.0, 0.1, 0.0,
 
-        // line along z-axis, I don't know why but it must be -0.1 to produce
-        // z-axis that points out in the direction of (X x Y)
+        // line along z-axis
         0.0, 0.0, 0.0,
         0.0, 0.0, 0.1
     ];
