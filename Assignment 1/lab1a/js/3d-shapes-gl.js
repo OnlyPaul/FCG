@@ -43,6 +43,7 @@ function drawScene_3d() {
 
 	mat4.identity(mvMatrix);
 
+    //mat4.translate(mvMatrix, mvMatrix, [0, 0, -2.8]);
     mat4.translate(mvMatrix, mvMatrix, [trCubeStack[0].x, trCubeStack[0].y, trCubeStack[0].z]);
     mat4.multiply(mvMatrix, mvMatrix, rotMatArray[0]);
 	mat4.scale(mvMatrix, mvMatrix, [scCubeStack[0].x, scCubeStack[0].y, scCubeStack[0].z]);
@@ -75,7 +76,7 @@ function drawScene_3d() {
 		mat4.translate(mvMatrix, mvMatrix, cubePos[i]); // move to its position
 
 		// the transitions after this are controlled by the user
-        mat4.translate(mvMatrix, mvMatrix, [trCubeStack[i+1].x, trCubeStack[i+1].y, trCubeStack[i+1].z]);
+        //mat4.translate(mvMatrix, mvMatrix, [trCubeStack[i+1].x, trCubeStack[i+1].y, trCubeStack[i+1].z]);
         mat4.multiply(mvMatrix, mvMatrix, rotMatArray[i+1]);
         mat4.scale(mvMatrix, mvMatrix, [scCubeStack[i+1].x, scCubeStack[i+1].y, scCubeStack[i+1].z]);
 
@@ -110,7 +111,7 @@ function drawScene_3d() {
 			mat4.translate(mvMatrix, mvMatrix, cubePos[i]); // analog to the cubes
 
 			// the transitions after this are controlled by the user
-            mat4.translate(mvMatrix, mvMatrix, [trCubeStack[i+1].x, trCubeStack[i+1].y, trCubeStack[i+1].z]);
+            //mat4.translate(mvMatrix, mvMatrix, [trCubeStack[i+1].x, trCubeStack[i+1].y, trCubeStack[i+1].z]);
             mat4.multiply(mvMatrix, mvMatrix, rotMatArray[i+1]);
 
 			setMatrixUniforms();
@@ -153,21 +154,27 @@ function translate_shapes() {
         if (obj_selection[i]) {
             if (map['ArrowRight']) {
                 trCubeStack[i].x += 0.01;
+                //mat4.translate(rotMatArray[i], rotMatArray[i], [0.01, 0, 0]);
             }
             if (map['ArrowLeft']) {
                 trCubeStack[i].x -= 0.01;
+                // mat4.translate(rotMatArray[i], rotMatArray[i], [-0.01, 0, 0]);
             }
             if (map['ArrowUp']) {
                 trCubeStack[i].y += 0.01;
+                // mat4.translate(rotMatArray[i], rotMatArray[i], [0, 0.01, 0]);
             }
             if (map['ArrowDown']) {
                 trCubeStack[i].y -= 0.01;
+                // mat4.translate(rotMatArray[i], rotMatArray[i], [0, -0.01, 0]);
             }
             if (map[',']) {
                 trCubeStack[i].z -= 0.01;
+                // mat4.translate(rotMatArray[i], rotMatArray[i], [0, 0, -0.01]);
             }
             if (map['.']) {
                 trCubeStack[i].z += 0.01;
+                // mat4.translate(rotMatArray[i], rotMatArray[i], [0, 0, 0.01]);
             }
         }
     }
