@@ -12,12 +12,12 @@
     <script type="text/javascript" src="vendor/materialize/js/materialize.min.js"></script>
 
     <!-- utilities and key binding -->
-    <script type="text/javascript" src="js/object-switch.js"></script>
     <script type="text/javascript" src="js/keybind.js"></script>
+    <script type="text/javascript" src="js/arrayUtils.js"></script>
 
     <!-- WebGL related codes go from here on -->
+    <script type="text/javascript" src="js/sphere.js"></script>
     <script type="text/javascript" src="js/canvasInit.js"></script>
-    <script type="text/javascript" src="js/triangle-gl.js"></script>
     <script type="text/javascript" src="js/3d-shapes-gl.js"></script>
     <script id="vs-default" type="x-shader/x-vertex">
         attribute vec3 aVertexPosition;
@@ -48,12 +48,10 @@
             <div class="nav-wrapper">
                 <a data-activates="mobile-demo" class="button-collapse"><i class="material-icons">menu</i></a>
                 <ul id="nav-mobile" class="right hide-on-med-and-down">
-                    <li id="tri-menu" class="active"><a onclick="switch_to_triangle()">Simple Triangle</a></li>
-                    <li id="3d-menu"><a onclick="switch_to_3d()">3D Shapes with Interactions<i class="left material-icons">games</i></a></li>
+                    <li class="active" id="3d-menu"><a>3D Shapes with Illumination<i class="left material-icons">games</i></a></li>
                 </ul>
                 <ul class="side-nav" id="mobile-demo">
-                    <li id="tri-menu-mobile" class="active"><a onclick="switch_to_triangle()">Simple Triangle</a></li>
-                    <li id="3d-menu-mobile"><a onclick="switch_to_3d()">3D Shapes with Interactions<i class="left material-icons">games</i></a></li>
+                    <li class="active" id="3d-menu-mobile"><a>3D Shapes with Illumination<i class="left material-icons">games</i></a></li>
                 </ul>
             </div>
         </nav>
@@ -67,44 +65,25 @@
                 </div>
             </div>
             <div class="col s5 side-instruct">
-                <ul id="tri-infotab" class="collapsible" data-collapsible="accordion">
+                <ul id="3d-infotab" class="collapsible" data-collapsible="accordion">
                     <li>
-                        <div class="collapsible-header active"><i class="left material-icons">assignment</i>Assignment</div>
+                        <div class="collapsible-header"><i class="left material-icons">assignment</i>Assignment</div>
                         <div class="collapsible-body">
-                                <span>
-                                    <p style="font-weight: bold;">Set up a drawing window and draw a simple box</p>
-                                    Set up a basic WebGL program, which initializes the drawing window. Draw a simple triangle.
-                                </span>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="collapsible-header"><i class="left material-icons">list</i>How to use</div>
-                        <div class="collapsible-body">
-                                <span>
-                                    There's no instruction on how to use the program.
-                                    This just shows a simple triangle with no interactive features at all.
-                                </span>
-                        </div>
-                    </li>
-                </ul>
-                <ul id="3d-infotab" style="display: none;" class="collapsible" data-collapsible="accordion">
-                    <li>
-                        <div class="collapsible-header active"><i class="left material-icons">assignment</i>Assignment</div>
-                        <div class="collapsible-body">
-                <span>
-                    <p style="font-weight: bold;">Adding 3D shapes</p>
-                    Create a scene with 9 3D shapes which can be seen from the camera.
-                    The shapes should be 3D and not flat. Each face should be a different colour so that
-                    transformations can more easily be seen.
-                    <br>
-                    <p style="font-weight: bold;">Add simple user interaction with the shapes</p>
-                    Respond to user interaction from the keyboard. Including:
-                </span>
+                            <span>
+                                <p style="font-weight: bold;">The Lighting</p>
+                                Create a scene with 9 3D shapes which can be seen from the camera. The shapes should be 3D and not flat.
+                                For example: cubes, spheres, cones, or a combination of them. Ensure that at least one of the shapes in
+                                the scene contains a curved surface (sphere, cone, cylinder, etc...) in order to better see the effects
+                                of the shading models. This assignment directly follows assignment 1a, which may be used as a starting point.
+                                Implement the following shading and illumination models using a point light source initialized at
+                                coordinates (0, 10, 0):
+                            </span>
                             <ul class="browser-default">
-                                <li style="list-style-type: circle !important;">Selection</li>
-                                <li style="list-style-type: circle !important;">Scaling</li>
-                                <li style="list-style-type: circle !important;">Rotation</li>
-                                <li style="list-style-type: circle !important;">Translation</li>
+                                <li style="list-style-type: circle !important;">Gouraud/diffuse Implement Gouraud shading (vertex shading) with diffuse illumination.</li>
+                                <li style="list-style-type: circle !important;">Gouraud/specular Implement Gouraud shading (vertex shading) with the Phong illumination model to produce a specular highlight.</li>
+                                <li style="list-style-type: circle !important;">Phong/diffuse Implement Phong shading (pixel shading) with diffuse illumination.</li>
+                                <li style="list-style-type: circle !important;">Phong/specular Implement Phong shading (pixel shading) with the Phong illumination model to produce a specular highlight.</li>
+                                <li style="list-style-type: circle !important;">Add additional user interaction with the shapes and lights</li>
                             </ul>
                         </div>
                     </li>
@@ -113,42 +92,19 @@
                         <div class="collapsible-body">
                             <ul class="browser-default">
                                 <li class="how-to-body">
-                                    <b>Selection:</b>
+                                    <b>Light Mode Selection:</b>
                                     <ul class="browser-default">
-                                        <li>use number [1-9] to select each shape. To select all shapes, press '0'</li>
+                                        <li>'u': Gouraud/diffuse</li>
+                                        <li>'i': Gouraud/specular</li>
+                                        <li>'o': Phong/diffuse</li>
+                                        <li>'p': Phong/specular</li>
                                     </ul>
                                 </li>
                                 <li class="how-to-body">
-                                    <b>Scaling</b>
+                                    <b>Light Transformation</b>
                                     <ul class="browser-default">
-                                        <li> 'x': decrease the width of the shape by a factor of 0.9</li>
-                                        <li> 'X': increase the width of the shape by a factor of 1.1</li>
-                                        <li> 'y': decrease the height of the shape by a factor of 0.9</li>
-                                        <li> 'Y': increase the height of the shape by a factor of 1.1</li>
-                                        <li> 'z': decrease the depth of the shape by a factor of 0.9</li>
-                                        <li> 'Z': increase the depth of the shape by a factor of 1.1</li>
-                                    </ul>
-                                </li>
-                                <li class="how-to-body">
-                                    <b>Rotation</b>
-                                    <ul class="browser-default">
-                                        <li> "w": rotate the current shape clockwise about the x-axis</li>
-                                        <li> "s": rotate the current shape counterclockwise about the x-axis</li>
-                                        <li> "e": rotate the current shape clockwise about the y-axis</li>
-                                        <li> "q": rotate the current shape counterclockwise about the y-axis</li>
-                                        <li> "d": rotate the current shape clockwise about the z-axis</li>
-                                        <li> "a": rotate the current shape counterclockwise about the z-axis</li>
-                                    </ul>
-                                </li>
-                                <li class="how-to-body">
-                                    <b>Translation</b>
-                                    <ul class="browser-default">
-                                        <li> "-&gt;" (right): move the shape to the right</li>
-                                        <li> "&lt;-" (left): move the shape to the left</li>
-                                        <li> "/\" (up): move the shape up</li>
-                                        <li> "\/" (down): move the shape down</li>
-                                        <li> "," (comma): move the shape forward</li>
-                                        <li> "." (period): move the shape backward</li>
+                                        <li>Use the 'L' key to toggle between the two interaction modes.
+                                            Lights should rotate and translate using the same keys as in assignment 1.</li>
                                     </ul>
                                 </li>
                             </ul>

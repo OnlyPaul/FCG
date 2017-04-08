@@ -9,14 +9,16 @@ var mvMatrix = mat4.create();
 var mvMatrixStack = [];
 var pMatrix = mat4.create();
 
-// buffer storing triangle data
-var triangleVertexPositionBuffer;
-var triangleVertexColorBuffer;
-
 // buffer for the cubes
 var cubeVertexPositionBuffer;
 var cubeVertexColorBuffer;
 var cubeVertexIndexBuffer;
+
+// buffer for the sphere
+var sphereVertices;
+var sphereVertexPositionBuffer;
+var sphereVertexColorBuffer;
+var sphereVertexIndexBuffer;
 
 // buffer for the overlaying axes
 var axisVertexPositionBuffer;
@@ -126,29 +128,6 @@ function setMatrixUniforms() {
 function initBuffers() {
     var vertices = [];
     var colors = [];
-
-    // create and bind triangle's buffer
-    triangleVertexPositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
-    vertices = [
-        0.0,  1.0,  0.0,
-        -1.0, -1.0,  0.0,
-        1.0, -1.0,  0.0
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-    triangleVertexPositionBuffer.itemSize = 3;
-    triangleVertexPositionBuffer.numItems = 3;
-
-    triangleVertexColorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexColorBuffer);
-    colors = [
-        0.937, 0.325, 0.314, 1.0,
-        0.120, 0.080, 0.080, 1.0,
-        0.937, 0.325, 0.314, 0.7
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-    triangleVertexColorBuffer.itemSize = 4;
-    triangleVertexColorBuffer.numItems = 3;
 
     // create and bind cubes' buffer
     cubeVertexPositionBuffer = gl.createBuffer();
@@ -262,6 +241,37 @@ function initBuffers() {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
     axisVertexColorBuffer.itemSize = 4;
     axisVertexColorBuffer.numItems = 6;
+
+
+    // create and bind sphere buffer
+    sphereVertices = Sphere.createSphereVertices(3, 12, 6);
+
+    colors = [
+        [0.996, 0.410, 0.379, 1.0],
+        [1.0, 0.5, 0.5, 1.0],
+        [1.0, 1.0, 0.988, 1.0],
+        [0.988, 0.988, 0.586, 1.0],
+        [0.793, 0.598, 0.785, 1.0],
+        [0.680, 0.773, 0.809, 1.0]
+    ];
+    unpackedColors = [];
+
+    for (i=0; i<sphereVertices.position.numComponents; i++) {
+        color = colors[i%6];
+        unpackedColors = unpackedColors.concat(color);
+    }
+
+    /*gl.bufferData(gl.ARRAY_BUFFER, sphereVertices.position, gl.STATIC_DRAW);
+    sphereVertexPositionBuffer.itemSize = 3;
+    sphereVertexPositionBuffer.numItems = sphereVertices.position.numComponents;
+
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(unpackedColors), gl.STATIC_DRAW);
+    sphereVertexColorBuffer.itemSize = 3;
+    sphereVertexPositionBuffer.numItems = sphereVertices.position.numComponents;
+
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, sphereVertices.indices, gl.STATIC_DRAW);
+    sphereVertexIndexBuffer.itemSize = 1;
+    sphereVertexIndexBuffer.numItems = sphereVertices.indices.numComponents;*/
 }
 
 function webGL_main() {
@@ -275,5 +285,6 @@ function webGL_main() {
     gl.enable(gl.DEPTH_TEST);
 
     // onload, to get things running when users enter the website
-    renderLoop_triangle();
+    drawScene_3d();
+    bindKey();
 }

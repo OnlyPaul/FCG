@@ -121,6 +121,17 @@ function drawScene_3d() {
 	}
 
 	gl.enable(gl.DEPTH_TEST);
+
+    /*gl.bindBuffer(gl.ARRAY_BUFFER, sphereVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, sphereVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, sphereVertexColorBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, sphereVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sphereVertexIndexBuffer);
+
+    setMatrixUniforms();
+    gl.drawArrays(gl.LINES, 0, sphereVertexPositionBuffer.numItems);*/
 }
 
 function rotate_shapes() {
