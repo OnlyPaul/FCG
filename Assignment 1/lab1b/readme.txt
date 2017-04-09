@@ -9,3 +9,6 @@ Which means for example:
     -   transition of world CS -> light moves
     -   transition of the light using (w) -> rotate light source around x-axis of the
         current world CS
+
+Ps. I admit, I failed to switch the light source control to global CS. This version would be
+handled exactly like the individual pieces in the former assignment
