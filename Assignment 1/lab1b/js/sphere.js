@@ -70,7 +70,32 @@ var Sphere = function() {
         };
     };
 
+    // create specific monotone color on vertices
+    var makeVertexColor = function(vertices, r, g, b, a) {
+        var numElements = vertices.position.numElements;
+        var vcolors = ArrayUtils.createAugmentedTypedArray(4, numElements, Uint8Array);
+
+        if (vertices.indices) {
+            // if there are indices
+            for (i=0; i<numElements; i++)
+                vcolors.push(r, g, b, a);
+        } else {
+            // if no indices defined
+            var numVertsPerColor = 3; // triangle mesh
+            var numSets = numElements/numVertsPerColor;
+            for (i=0; i<numSets; i++) {
+                for (j=0; j<numVertsPerColor; j++)
+                    vcolors.push(r, g, b, a);
+            }
+        }
+
+        vertices.color = vcolors;
+
+        return vertices;
+    };
+
     return {
-        createSphereVertices: createSphereVertices
+        createSphereVertices: createSphereVertices,
+        makeVertexColor: makeVertexColor
     };
 }();

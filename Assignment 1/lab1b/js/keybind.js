@@ -8,7 +8,9 @@ var keydown_handler = function(e) {
         e.key == '2' || e.key == '3' ||
         e.key == '4' || e.key == '5' ||
         e.key == '6' || e.key == '7' ||
-        e.key == '8' || e.key == '9' )
+        e.key == '8' || e.key == '9' ||
+        e.key == 'l'
+    )
         change_selection(e.key);
     operate();
 };
@@ -32,8 +34,18 @@ function change_selection(key) {
 
     if (key==0) {
         obj_selection[0] = true;
-        for (i=1; i<=9; i++)
+        for (i=1; i<=10; i++)
             obj_selection[i] = false;
+    } else if (key=='l') {
+        // obj_selection[10] is for the light source
+        if (obj_selection[10]) {
+            obj_selection[0] = true;
+            obj_selection[10] = false;
+        } else {
+            for (i=0; i<=9; i++)
+                obj_selection[i] = false;
+            obj_selection[10] = true;
+        }
     } else if (!obj_selection[key]) {
         obj_selection[0] = false;
         obj_selection[key] = true;
@@ -68,6 +80,23 @@ function operate() {
         map['Y'] || map['z'] || map['Z'])
         scale_shapes();
 
-    if (map['.'])
-        test_tr();
+    if (map['u']) {
+        gd_shader();
+        drawScene_3d();
+    }
+
+    if (map['i']) {
+        gs_shader();
+        drawScene_3d();
+    }
+
+    // if (map['o']) {
+    //     pd_shader();
+    //     drawScene_3d();
+    // }
+    //
+    // if (map['p']) {
+    //     ps_shader();
+    //     drawScene_3d();
+    // }
 }

@@ -13,9 +13,10 @@
 
     <!-- utilities and key binding -->
     <script type="text/javascript" src="js/keybind.js"></script>
-    <script type="text/javascript" src="js/arrayUtils.js"></script>
+    <script type="text/javascript" src="js/array-utils.js"></script>
 
     <!-- WebGL related codes go from here on -->
+    <script type="text/javascript" src="js/camera.js"></script>
     <script type="text/javascript" src="js/sphere.js"></script>
     <script type="text/javascript" src="js/canvasInit.js"></script>
     <script type="text/javascript" src="js/3d-shapes-gl.js"></script>
@@ -39,6 +40,64 @@
 
         void main(void) {
             gl_FragColor = vColor;
+        }
+    </script>
+    <script id="gd-vertex" type="x-shader/x-vertex">
+        attribute vec3 aVertexPosition;
+        attribute vec3 aVertexNormal;
+        attribute vec4 aVertexColor;
+
+        uniform mat3 uMVInverseTransposeMatrix;
+        uniform mat4 uMVMatrix;
+        uniform mat4 uPMatrix;
+        uniform vec3 uLightPos;
+
+        varying vec4 vColor;
+
+        void main(void) {
+            vec3 MVVertex = vec3(uMVMatrix*vec4(aVertexPosition, 1.0));
+            vec3 MVNormal = uMVInverseTransposeMatrix*aVertexNormal;
+            vec3 lightVector = normalize(uLightPos-MVVertex);
+            float diffuse = dot(MVNormal, lightVector);
+            //diffuse *= 0.3;
+
+            gl_Position = uPMatrix*uMVMatrix*vec4(aVertexPosition, 1.0);
+            vColor = aVertexColor;
+            vColor.rgb *= diffuse;
+        }
+    </script>
+    <script id="gs-vertex" type="x-shader/x-vertex">
+        attribute vec3 aVertexPosition;
+        attribute vec3 aVertexNormal;
+        attribute vec4 aVertexColor;
+
+        uniform mat3 uMVInverseTransposeMatrix;
+        uniform mat4 uMVMatrix;
+        uniform mat4 uPMatrix;
+        uniform vec3 uLightPos;
+        uniform vec3 uCamPos;
+
+        varying vec4 vColor;
+
+        void main(void) {
+            vec3 MVVertex = vec3(uMVMatrix*vec4(aVertexPosition, 1.0));
+            vec3 MVNormal = uMVInverseTransposeMatrix*aVertexNormal;
+            vec3 lightVector = normalize(uLightPos-MVVertex);
+            vec3 surfaceToViewVector = normalize(uCamPos-MVVertex);
+            vec3 halfVector = normalize(lightVector + surfaceToViewVector);
+
+            float diffuse = dot(MVNormal, lightVector);
+            //diffuse *= 0.3;
+
+            float specular = 0.0;
+            if (diffuse > 0.0)
+                specular = pow(dot(MVNormal, halfVector), 70.0);
+            specular *= 0.6;
+
+            gl_Position = uPMatrix*uMVMatrix*vec4(aVertexPosition, 1.0);
+            vColor = aVertexColor;
+            vColor.rgb *= diffuse;
+            vColor.rgb += specular;
         }
     </script>
 </head>
@@ -88,13 +147,13 @@
                         </div>
                     </li>
                     <li>
-                        <div class="collapsible-header"><i class="left material-icons">list</i>How to use</div>
+                        <div class="collapsible-header active"><i class="left material-icons">list</i>How to use</div>
                         <div class="collapsible-body">
                             <ul class="browser-default">
                                 <li class="how-to-body">
                                     <b>Light Mode Selection:</b>
                                     <ul class="browser-default">
-                                        <li>'u': Gouraud/diffuse</li>
+                                        <li>'u': Gouraud/diffuse (default)</li>
                                         <li>'i': Gouraud/specular</li>
                                         <li>'o': Phong/diffuse</li>
                                         <li>'p': Phong/specular</li>
@@ -103,7 +162,7 @@
                                 <li class="how-to-body">
                                     <b>Light Transformation</b>
                                     <ul class="browser-default">
-                                        <li>Use the 'L' key to toggle between the two interaction modes.
+                                        <li>Use the 'l' key to toggle between the two interaction modes.
                                             Lights should rotate and translate using the same keys as in assignment 1.</li>
                                     </ul>
                                 </li>

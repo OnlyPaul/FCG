@@ -3,26 +3,39 @@
  ------------------------------------------------- */
 var gl;
 var shaderProgram;
+var shaderGD;
+var shaderGS;
+var shaderPD;
+var shaderPS;
+
+// boolean show which program is active
+var useShaderProgram;
+var useshaderGD;
+var useShaderGS;
+var useShaderPD;
+var useShaderPS;
 
 // model/view and projection matrix related
 var mvMatrix = mat4.create();
 var mvMatrixStack = [];
 var pMatrix = mat4.create();
 
-// buffer for the cubes
-var cubeVertexPositionBuffer;
-var cubeVertexColorBuffer;
-var cubeVertexIndexBuffer;
-
 // buffer for the sphere
 var sphereVertices;
 var sphereVertexPositionBuffer;
+var sphereVertexNormalBuffer;
 var sphereVertexColorBuffer;
 var sphereVertexIndexBuffer;
 
 // buffer for the overlaying axes
 var axisVertexPositionBuffer;
 var axisVertexColorBuffer;
+
+// light position
+var lightPos = vec3.create();
+lightPos[0] = 0;
+lightPos[1] = 10;
+lightPos[2] = 0;
 
 /*
  * AUXILIARY FUNCTIONS ZONE
@@ -42,6 +55,15 @@ function mvPopMatrix() {
         throw "Invalid Stacks. Zero member.";
 
     mvMatrix = mvMatrixStack.pop();
+}
+
+function programInUse() {
+    if (useShaderProgram)
+        return shaderProgram;
+    else if (useshaderGD)
+        return shaderGD;
+    else if (useShaderGS)
+        return shaderGS;
 }
 
 /*
@@ -98,115 +120,66 @@ function getShader(gl, id) {
 function initShaders() {
     var fragmentShader = getShader(gl, "fs-default");
     var vertexShader = getShader(gl, "vs-default");
+    var vertexGouraudDiffuse = getShader(gl, "gd-vertex");
+    var vertexGouraudSpecular = getShader(gl, "gs-vertex");
 
     shaderProgram = gl.createProgram();
     gl.attachShader(shaderProgram, vertexShader);
     gl.attachShader(shaderProgram, fragmentShader);
     gl.linkProgram(shaderProgram);
 
+    shaderGD = gl.createProgram();
+    gl.attachShader(shaderGD, vertexGouraudDiffuse);
+    gl.attachShader(shaderGD, fragmentShader);
+    gl.linkProgram(shaderGD);
+
+    shaderGS = gl.createProgram();
+    gl.attachShader(shaderGS, vertexGouraudSpecular);
+    gl.attachShader(shaderGS, fragmentShader);
+    gl.linkProgram(shaderGS);
+
     if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
         alert("Could not initialise shaders");
     }
 
-    gl.useProgram(shaderProgram);
+    if (!gl.getProgramParameter(shaderGD, gl.LINK_STATUS)) {
+        alert("Could not initialise shaders");
+    }
 
-    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-    gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+    if (!gl.getProgramParameter(shaderGS, gl.LINK_STATUS)) {
+        alert("Could not initialise shaders");
+    }
 
-    shaderProgram.vertexColorAttribute = gl.getAttribLocation(shaderProgram, "aVertexColor");
-    gl.enableVertexAttribArray(shaderProgram.vertexColorAttribute);
-
-    shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
-    shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+    gd_shader();
 }
 
 function setMatrixUniforms() {
-    gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
-    gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
+    if (useShaderProgram) {
+        gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
+        gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
+    } else if (useshaderGD) {
+        var ITmvMatrix = mat3.create();
+        mat3.normalFromMat4(ITmvMatrix, mvMatrix);
+
+        gl.uniformMatrix3fv(shaderGD.itmvMatrixUniform, false, ITmvMatrix);
+        gl.uniformMatrix4fv(shaderGD.pMatrixUniform, false, pMatrix);
+        gl.uniformMatrix4fv(shaderGD.mvMatrixUniform, false, mvMatrix);
+        gl.uniform3fv(shaderGD.lightPosUniform, lightPos);
+    } else if (useShaderGS) {
+        var ITmvMatrix = mat3.create();
+        mat3.normalFromMat4(ITmvMatrix, mvMatrix);
+
+        gl.uniformMatrix3fv(shaderGS.itmvMatrixUniform, false, ITmvMatrix);
+        gl.uniformMatrix4fv(shaderGS.pMatrixUniform, false, pMatrix);
+        gl.uniformMatrix4fv(shaderGS.mvMatrixUniform, false, mvMatrix);
+        gl.uniform3fv(shaderGS.lightPosUniform, lightPos);
+        gl.uniform3fv(shaderGS.camPosUniform, camPos);
+    }
 }
 
 function initBuffers() {
     var vertices = [];
     var colors = [];
-
-    // create and bind cubes' buffer
-    cubeVertexPositionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
-    vertices = [
-        // Front face
-        -0.15, -0.15,  0.15,
-        0.15, -0.15,  0.15,
-        0.15,  0.15,  0.15,
-        -0.15,  0.15,  0.15,
-
-        // Back face
-        -0.15, -0.15, -0.15,
-        -0.15,  0.15, -0.15,
-        0.15,  0.15, -0.15,
-        0.15, -0.15, -0.15,
-
-        // Top face
-        -0.15,  0.15, -0.15,
-        -0.15,  0.15,  0.15,
-        0.15,  0.15,  0.15,
-        0.15,  0.15, -0.15,
-
-        // Bottom face
-        -0.15, -0.15, -0.15,
-        0.15, -0.15, -0.15,
-        0.15, -0.15,  0.15,
-        -0.15, -0.15,  0.15,
-
-        // Right face
-        0.15, -0.15, -0.15,
-        0.15,  0.15, -0.15,
-        0.15,  0.15,  0.15,
-        0.15, -0.15,  0.15,
-
-        // Left face
-        -0.15, -0.15, -0.15,
-        -0.15, -0.15,  0.15,
-        -0.15,  0.15,  0.15,
-        -0.15,  0.15, -0.15
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-    cubeVertexPositionBuffer.itemSize = 3;
-    cubeVertexPositionBuffer.numItems = 24;
-
-    cubeVertexColorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexColorBuffer);
-    colors = [
-        [0.996, 0.410, 0.379, 1.0], // Front face
-        [1.0, 0.5, 0.5, 1.0], // Back face
-        [1.0, 1.0, 0.988, 1.0], // Top face
-        [0.988, 0.988, 0.586, 1.0], // Bottom face
-        [0.793, 0.598, 0.785, 1.0], // Right face
-        [0.680, 0.773, 0.809, 1.0]  // Left face
-    ];
-    var unpackedColors = [];
-    for (var i in colors) {
-        var color = colors[i];
-        for (var j=0; j < 4; j++) {
-            unpackedColors = unpackedColors.concat(color);
-        }
-    }
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(unpackedColors), gl.STATIC_DRAW);
-    cubeVertexColorBuffer.itemSize = 4;
-    cubeVertexColorBuffer.numItems = 24;
-
-    cubeVertexIndexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
-    var cubeVertexIndices = [
-        0, 1, 2,      0, 2, 3,    // Front face
-        4, 5, 6,      4, 6, 7,    // Back face
-        8, 9, 10,     8, 10, 11,  // Top face
-        12, 13, 14,   12, 14, 15, // Bottom face
-        16, 17, 18,   16, 18, 19, // Right face
-        20, 21, 22,   20, 22, 23  // Left face
-    ];
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertexIndices), gl.STATIC_DRAW);
-    cubeVertexIndexBuffer.itemSize = 1;
-    cubeVertexIndexBuffer.numItems = 36;
 
     // create and bind axis-lines' buffer
     axisVertexPositionBuffer = gl.createBuffer();
@@ -244,7 +217,7 @@ function initBuffers() {
 
 
     // create and bind sphere buffer
-    sphereVertices = Sphere.createSphereVertices(3, 12, 6);
+    sphereVertices = Sphere.createSphereVertices(0.2, 24, 24);
 
     colors = [
         [0.996, 0.410, 0.379, 1.0],
@@ -256,22 +229,43 @@ function initBuffers() {
     ];
     unpackedColors = [];
 
-    for (i=0; i<sphereVertices.position.numComponents; i++) {
+    for (i=0; i<sphereVertices.position.numElements; i++) {
         color = colors[i%6];
         unpackedColors = unpackedColors.concat(color);
     }
 
-    /*gl.bufferData(gl.ARRAY_BUFFER, sphereVertices.position, gl.STATIC_DRAW);
+    // colors = [
+    //     [1.0, 0.5, 0.5, 1.0]
+    // ];
+    // unpackedColors = [];
+    //
+    // for (i=0; i<sphereVertices.position.numElements; i++) {
+    //     unpackedColors = unpackedColors.concat(colors[0]);
+    // }
+
+    sphereVertexPositionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, sphereVertexPositionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, sphereVertices.position, gl.STATIC_DRAW);
     sphereVertexPositionBuffer.itemSize = 3;
-    sphereVertexPositionBuffer.numItems = sphereVertices.position.numComponents;
+    sphereVertexPositionBuffer.numItems = sphereVertices.position.numElements;
 
+    sphereVertexColorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, sphereVertexColorBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(unpackedColors), gl.STATIC_DRAW);
-    sphereVertexColorBuffer.itemSize = 3;
-    sphereVertexPositionBuffer.numItems = sphereVertices.position.numComponents;
+    sphereVertexColorBuffer.itemSize = 4;
+    sphereVertexPositionBuffer.numItems = sphereVertices.position.numElements;
 
+    sphereVertexNormalBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, sphereVertexNormalBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, sphereVertices.normal, gl.STATIC_DRAW);
+    sphereVertexNormalBuffer.itemSize = 3;
+    sphereVertexPositionBuffer.numItems = sphereVertices.normal.numElements;
+
+    sphereVertexIndexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sphereVertexIndexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, sphereVertices.indices, gl.STATIC_DRAW);
     sphereVertexIndexBuffer.itemSize = 1;
-    sphereVertexIndexBuffer.numItems = sphereVertices.indices.numComponents;*/
+    sphereVertexIndexBuffer.numItems = sphereVertices.indices.length;
 }
 
 function webGL_main() {
@@ -285,6 +279,78 @@ function webGL_main() {
     gl.enable(gl.DEPTH_TEST);
 
     // onload, to get things running when users enter the website
-    drawScene_3d();
+    drawScene_3d(shaderProgram);
     bindKey();
+}
+
+/*
+ * SHADER SWITCHING
+ -------------------------------------------------- */
+
+function gd_shader() {
+    gl.useProgram(shaderGD);
+
+    shaderGD.vertexPositionAttribute = gl.getAttribLocation(shaderGD, "aVertexPosition");
+    gl.enableVertexAttribArray(shaderGD.vertexPositionAttribute);
+
+    shaderGD.vertexColorAttribute = gl.getAttribLocation(shaderGD, "aVertexColor");
+    gl.enableVertexAttribArray(shaderGD.vertexColorAttribute);
+
+    shaderGD.vertexNormalAttribute = gl.getAttribLocation(shaderGD, "aVertexNormal");
+    gl.enableVertexAttribArray(shaderGD.vertexNormalAttribute);
+
+    shaderGD.pMatrixUniform = gl.getUniformLocation(shaderGD, "uPMatrix");
+    shaderGD.mvMatrixUniform = gl.getUniformLocation(shaderGD, "uMVMatrix");
+    shaderGD.lightPosUniform = gl.getUniformLocation(shaderGD, "uLightPos");
+    shaderGD.itmvMatrixUniform = gl.getUniformLocation(shaderGD, "uMVInverseTransposeMatrix");
+
+    useShaderProgram = false;
+    useshaderGD = true;
+    useShaderGS = false;
+    useShaderPD = false;
+    useShaderPS = false;
+}
+
+function gs_shader() {
+    gl.useProgram(shaderGS);
+
+    shaderGS.vertexPositionAttribute = gl.getAttribLocation(shaderGS, "aVertexPosition");
+    gl.enableVertexAttribArray(shaderGS.vertexPositionAttribute);
+
+    shaderGS.vertexColorAttribute = gl.getAttribLocation(shaderGS, "aVertexColor");
+    gl.enableVertexAttribArray(shaderGS.vertexColorAttribute);
+
+    shaderGS.vertexNormalAttribute = gl.getAttribLocation(shaderGS, "aVertexNormal");
+    gl.enableVertexAttribArray(shaderGS.vertexNormalAttribute);
+
+    shaderGS.pMatrixUniform = gl.getUniformLocation(shaderGS, "uPMatrix");
+    shaderGS.mvMatrixUniform = gl.getUniformLocation(shaderGS, "uMVMatrix");
+    shaderGS.lightPosUniform = gl.getUniformLocation(shaderGS, "uLightPos");
+    shaderGS.camPosUniform = gl.getUniformLocation(shaderGS, "uCamPos");
+    shaderGS.itmvMatrixUniform = gl.getUniformLocation(shaderGS, "uMVInverseTransposeMatrix");
+
+    useShaderProgram = false;
+    useshaderGD = false;
+    useShaderGS = true;
+    useShaderPD = false;
+    useShaderPS = false;
+}
+
+function nolight_shader() {
+    gl.useProgram(shaderProgram);
+
+    shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+    gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
+
+    shaderProgram.vertexColorAttribute = gl.getAttribLocation(shaderProgram, "aVertexColor");
+    gl.enableVertexAttribArray(shaderProgram.vertexColorAttribute);
+
+    shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+    shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+
+    useShaderProgram = true;
+    useshaderGD = false;
+    useShaderGS = false;
+    useShaderPD = false;
+    useShaderPS = false;
 }
