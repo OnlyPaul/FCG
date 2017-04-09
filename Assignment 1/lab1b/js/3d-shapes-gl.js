@@ -32,7 +32,6 @@ var rotMatArray = [];
 for (i=0; i<11; i++) {
     rotMatArray.push(mat4.create());
     mat4.identity(rotMatArray[i]);
-
 }
 
 var camPos = [0, 0, 2.8];
@@ -46,28 +45,22 @@ function drawScene_3d() {
 	gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // light position
-    lightPos[0] = 0;
-    lightPos[1] = 10;
-    lightPos[2] = 0;
-
-    lightPos[0] += trSphereStack[10].x;
-    lightPos[1] += trSphereStack[10].y;
-    lightPos[2] += trSphereStack[10].z;
-    // vec3.transformMat4(lightPos, lightPos, rotMatArray[10]);
-
-    // console.log(trSphereStack[10]);
-    // console.log(lightPos);
-
 	mat4.perspective(pMatrix, degToRad(45), gl.viewportWidth / gl.viewportHeight, 0.01, 2000.0);
 	//mat4.ortho(pMatrix, -1, 1, -1, 1, 0.01, 2000);
 
 	mat4.identity(mvMatrix);
 	mat4.invert(mvMatrix, camMatrix);
 
-    //mat4.translate(mvMatrix, mvMatrix, [0, 0, -2.8]);
     mat4.translate(mvMatrix, mvMatrix, [trSphereStack[0].x, trSphereStack[0].y, trSphereStack[0].z]);
     mat4.multiply(mvMatrix, mvMatrix, rotMatArray[0]);
+
+    // transform the light source position, must be here before scaling
+    mvPushMatrix();
+    mat4.multiply(mvMatrix, mvMatrix, rotMatArray[10]);
+    mat4.translate(mvMatrix, mvMatrix, [trSphereStack[10].x, trSphereStack[10].y, trSphereStack[10].z]);
+    vec3.transformMat4(lightPos, lightPos, mvMatrix);
+    mvPopMatrix();
+
 	mat4.scale(mvMatrix, mvMatrix, [scSphereStack[0].x, scSphereStack[0].y, scSphereStack[0].z]);
 
 	var spherePos = [
@@ -149,7 +142,22 @@ function drawScene_3d() {
 		}
 	}
 
+	// CS axes for the light source
+	if (obj_selection[10]) {
+        mvPushMatrix();
+        // the transitions after this are controlled by the user
+        mat4.multiply(mvMatrix, mvMatrix, rotMatArray[10]);
+        mat4.translate(mvMatrix, mvMatrix, [trSphereStack[10].x, trSphereStack[10].y, trSphereStack[10].z]);
+
+        setMatrixUniforms();
+        gl.drawArrays(gl.LINES, 0, axisVertexPositionBuffer.numItems);
+        mvPopMatrix();
+    }
+
 	gl.enable(gl.DEPTH_TEST);
+	lightPos[0] = 0.0;
+    lightPos[1] = 0.0;
+    lightPos[2] = 0.0;
 }
 
 function rotate_shapes() {
@@ -183,27 +191,21 @@ function translate_shapes() {
         if (obj_selection[i]) {
             if (map['ArrowRight']) {
                 trSphereStack[i].x += 0.01;
-                //mat4.translate(rotMatArray[i], rotMatArray[i], [0.01, 0, 0]);
             }
             if (map['ArrowLeft']) {
                 trSphereStack[i].x -= 0.01;
-                // mat4.translate(rotMatArray[i], rotMatArray[i], [-0.01, 0, 0]);
             }
             if (map['ArrowUp']) {
                 trSphereStack[i].y += 0.01;
-                // mat4.translate(rotMatArray[i], rotMatArray[i], [0, 0.01, 0]);
             }
             if (map['ArrowDown']) {
                 trSphereStack[i].y -= 0.01;
-                // mat4.translate(rotMatArray[i], rotMatArray[i], [0, -0.01, 0]);
             }
             if (map[',']) {
                 trSphereStack[i].z -= 0.01;
-                // mat4.translate(rotMatArray[i], rotMatArray[i], [0, 0, -0.01]);
             }
             if (map['.']) {
                 trSphereStack[i].z += 0.01;
-                // mat4.translate(rotMatArray[i], rotMatArray[i], [0, 0, 0.01]);
             }
         }
     }

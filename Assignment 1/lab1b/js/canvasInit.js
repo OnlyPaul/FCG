@@ -34,7 +34,7 @@ var axisVertexColorBuffer;
 // light position
 var lightPos = vec3.create();
 lightPos[0] = 0;
-lightPos[1] = 10;
+lightPos[1] = 0;
 lightPos[2] = 0;
 
 /*
@@ -252,21 +252,6 @@ function initBuffers() {
 
     // create and bind sphere buffer
     sphereVertices = Sphere.createSphereVertices(0.2, 24, 24);
-
-    // colors = [
-    //     [0.996, 0.410, 0.379, 1.0],
-    //     [1.0, 0.5, 0.5, 1.0],
-    //     [1.0, 1.0, 0.988, 1.0],
-    //     [0.988, 0.988, 0.586, 1.0],
-    //     [0.793, 0.598, 0.785, 1.0],
-    //     [0.680, 0.773, 0.809, 1.0]
-    // ];
-    // unpackedColors = [];
-    //
-    // for (i=0; i<sphereVertices.position.numElements; i++) {
-    //     color = colors[i%6];
-    //     unpackedColors = unpackedColors.concat(color);
-    // }
 
     colors = [
         [1.0, 0.5, 0.5, 1.0]

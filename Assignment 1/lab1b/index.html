@@ -86,14 +86,16 @@
             vec3 MVNormal = uMVInverseTransposeMatrix*aVertexNormal;
             vec3 reverseLightVector = normalize(uLightPos-MVVertex);
             vec3 surfaceToViewVector = normalize(uCamPos-MVVertex);
-            vec3 halfVector = normalize(reverseLightVector + surfaceToViewVector);
+            vec3 reflectionVector = normalize(2.0*MVNormal-reverseLightVector);
 
             float diffuse = dot(MVNormal, reverseLightVector);
+            diffuse = diffuse > 0.0 ? diffuse : 0.0;
 
             float specular = 0.0;
             if (diffuse > 0.0)
-                specular = pow(dot(MVNormal, halfVector), 30.0);
+                specular = pow(dot(reflectionVector, surfaceToViewVector), 30.0);
             specular *= 0.6;
+            specular = specular > 0.0 ? specular : 0.0;
 
             gl_Position = uPMatrix*uMVMatrix*vec4(aVertexPosition, 1.0);
             vColor = aVertexColor;
@@ -116,7 +118,6 @@
 
         varying vec3 vMVNormal;
         varying vec3 vReverseLightVector;
-        varying vec3 vReflectionVector;
         varying vec3 vSurfaceToViewVector;
         varying vec4 vColor;
 
@@ -125,7 +126,6 @@
             vMVNormal = uMVInverseTransposeMatrix*aVertexNormal;
             vReverseLightVector = normalize(uLightPos-MVVertex);
             vSurfaceToViewVector = normalize(uCamPos-MVVertex);
-            vReflectionVector = normalize((2.0*vMVNormal)-vReverseLightVector);
 
             gl_Position = uPMatrix*uMVMatrix*vec4(aVertexPosition, 1.0);
             vColor = aVertexColor;
@@ -159,18 +159,19 @@
         // passed from vertex shader
         varying vec3 vMVNormal;
         varying vec3 vReverseLightVector;
-        varying vec3 vReflectionVector;
         varying vec3 vSurfaceToViewVector;
 
         varying vec4 vColor;
 
         void main(void) {
+            vec3 reflectionVector = normalize((2.0*vMVNormal)-vReverseLightVector);
+
             float diffuse = dot(vMVNormal, vReverseLightVector);
             diffuse = diffuse > 0.0 ? diffuse : 0.0;
 
             float specular = 0.0;
             if (diffuse > 0.0)
-                specular = pow(dot(vReflectionVector, vSurfaceToViewVector), 30.0);
+                specular = pow(dot(reflectionVector, vSurfaceToViewVector), 30.0);
             specular *= 0.6;
             specular = specular > 0.0 ? specular : 0.0;
 

@@ -1,10 +1,11 @@
-In this assignment, apart from gl-matrix and webgl-utils,
-these libraries are also used:
-- jQuery:       for utilities, not WebGL related
-- materialize:  to support materialize-css,
-				because I could not bear the dry look without decoration
+"Light transformations are with respect to the global coordinates."
+To be honest, I'm a little bit confused with the phrase, because the global coordinates
+could also be moved and rotated. Thus, I'm not quite sure if the light source should be
+moved along with the global coordinates when the coordinates are moved.
 
-The colors of the axes displayed in the system are
-    x-axis: red
-    y-axis: green
-    z-axis: blue
+Therefore, I would infer that the light source moves along with the world. And if any user
+moves the light source individually, the transition would be according to the world CS basis.
+Which means for example:
+    -   transition of world CS -> light moves
+    -   transition of the light using (w) -> rotate light source around x-axis of the
+        current world CS
