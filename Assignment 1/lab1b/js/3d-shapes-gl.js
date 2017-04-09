@@ -56,8 +56,8 @@ function drawScene_3d() {
     lightPos[2] += trSphereStack[10].z;
     // vec3.transformMat4(lightPos, lightPos, rotMatArray[10]);
 
-    console.log(trSphereStack[10]);
-    console.log(lightPos);
+    // console.log(trSphereStack[10]);
+    // console.log(lightPos);
 
 	mat4.perspective(pMatrix, degToRad(45), gl.viewportWidth / gl.viewportHeight, 0.01, 2000.0);
 	//mat4.ortho(pMatrix, -1, 1, -1, 1, 0.01, 2000);
@@ -83,12 +83,13 @@ function drawScene_3d() {
 	];
 
 	var n_sphere = 9;
+    gl.uniform1i(prog.useLighting, 1);
 
     // bind sphere buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, sphereVertexPositionBuffer);
     gl.vertexAttribPointer(prog.vertexPositionAttribute, sphereVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-    if (useshaderGD || useShaderGS) {
+    if (!useShaderProgram) {
         gl.bindBuffer(gl.ARRAY_BUFFER, sphereVertexNormalBuffer);
         gl.vertexAttribPointer(prog.vertexNormalAttribute, sphereVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
     }
@@ -114,6 +115,7 @@ function drawScene_3d() {
 
 	// bind axis line buffers
 	gl.disable(gl.DEPTH_TEST);
+    gl.uniform1i(prog.useLighting, 0);
 
 	gl.bindBuffer(gl.ARRAY_BUFFER, axisVertexPositionBuffer);
 	gl.vertexAttribPointer(prog.vertexPositionAttribute, axisVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
@@ -122,7 +124,7 @@ function drawScene_3d() {
 	gl.vertexAttribPointer(prog.vertexColorAttribute, axisVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
 	// global CS axes
-	if (obj_selection[0] || obj_selection[10]) {
+	if (obj_selection[0]) {
 		mvPushMatrix();
 		mat4.scale(mvMatrix, mvMatrix, [2.5, 2.5, 2.5]);
 		mat4.scale(mvMatrix, mvMatrix, [1/scSphereStack[0].x, 1/scSphereStack[0].y, 1/scSphereStack[0].z]);
@@ -179,7 +181,6 @@ function rotate_shapes() {
 function translate_shapes() {
     for (i=0; i<=10; i++) {
         if (obj_selection[i]) {
-        	console.log("i: " + i);
             if (map['ArrowRight']) {
                 trSphereStack[i].x += 0.01;
                 //mat4.translate(rotMatArray[i], rotMatArray[i], [0.01, 0, 0]);

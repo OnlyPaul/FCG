@@ -64,6 +64,10 @@ function programInUse() {
         return shaderGD;
     else if (useShaderGS)
         return shaderGS;
+    else if (useShaderPD)
+        return shaderPD;
+    else if (useShaderPS)
+        return shaderPS;
 }
 
 /*
@@ -119,34 +123,55 @@ function getShader(gl, id) {
 
 function initShaders() {
     var fragmentShader = getShader(gl, "fs-default");
+    var fragmentPhongDiffuse = getShader(gl, "pd-fragment");
+    var fragmentPhongSpecular = getShader(gl, "ps-fragment");
     var vertexShader = getShader(gl, "vs-default");
     var vertexGouraudDiffuse = getShader(gl, "gd-vertex");
     var vertexGouraudSpecular = getShader(gl, "gs-vertex");
+    var vertexPhong = getShader(gl, "phong-vertex");
 
     shaderProgram = gl.createProgram();
     gl.attachShader(shaderProgram, vertexShader);
     gl.attachShader(shaderProgram, fragmentShader);
     gl.linkProgram(shaderProgram);
 
+    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+        alert("Could not initialise shaders");
+    }
+
     shaderGD = gl.createProgram();
     gl.attachShader(shaderGD, vertexGouraudDiffuse);
     gl.attachShader(shaderGD, fragmentShader);
     gl.linkProgram(shaderGD);
+
+    if (!gl.getProgramParameter(shaderGD, gl.LINK_STATUS)) {
+        alert("Could not initialise shaders");
+    }
 
     shaderGS = gl.createProgram();
     gl.attachShader(shaderGS, vertexGouraudSpecular);
     gl.attachShader(shaderGS, fragmentShader);
     gl.linkProgram(shaderGS);
 
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        alert("Could not initialise shaders");
-    }
-
-    if (!gl.getProgramParameter(shaderGD, gl.LINK_STATUS)) {
-        alert("Could not initialise shaders");
-    }
-
     if (!gl.getProgramParameter(shaderGS, gl.LINK_STATUS)) {
+        alert("Could not initialise shaders");
+    }
+
+    shaderPD = gl.createProgram();
+    gl.attachShader(shaderPD, vertexPhong);
+    gl.attachShader(shaderPD, fragmentPhongDiffuse);
+    gl.linkProgram(shaderPD);
+
+    if (!gl.getProgramParameter(shaderPD, gl.LINK_STATUS)) {
+        alert("Could not initialise shaders");
+    }
+
+    shaderPS = gl.createProgram();
+    gl.attachShader(shaderPS, vertexPhong);
+    gl.attachShader(shaderPS, fragmentPhongSpecular);
+    gl.linkProgram(shaderPS);
+
+    if (!gl.getProgramParameter(shaderPD, gl.LINK_STATUS)) {
         alert("Could not initialise shaders");
     }
 
@@ -154,26 +179,35 @@ function initShaders() {
 }
 
 function setMatrixUniforms() {
+    var ITmvMatrix = mat3.create();
+    mat3.normalFromMat4(ITmvMatrix, mvMatrix);
+
     if (useShaderProgram) {
         gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
         gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
     } else if (useshaderGD) {
-        var ITmvMatrix = mat3.create();
-        mat3.normalFromMat4(ITmvMatrix, mvMatrix);
-
         gl.uniformMatrix3fv(shaderGD.itmvMatrixUniform, false, ITmvMatrix);
         gl.uniformMatrix4fv(shaderGD.pMatrixUniform, false, pMatrix);
         gl.uniformMatrix4fv(shaderGD.mvMatrixUniform, false, mvMatrix);
         gl.uniform3fv(shaderGD.lightPosUniform, lightPos);
     } else if (useShaderGS) {
-        var ITmvMatrix = mat3.create();
-        mat3.normalFromMat4(ITmvMatrix, mvMatrix);
-
         gl.uniformMatrix3fv(shaderGS.itmvMatrixUniform, false, ITmvMatrix);
         gl.uniformMatrix4fv(shaderGS.pMatrixUniform, false, pMatrix);
         gl.uniformMatrix4fv(shaderGS.mvMatrixUniform, false, mvMatrix);
         gl.uniform3fv(shaderGS.lightPosUniform, lightPos);
         gl.uniform3fv(shaderGS.camPosUniform, camPos);
+    } else if (useShaderPD) {
+        gl.uniformMatrix3fv(shaderPD.itmvMatrixUniform, false, ITmvMatrix);
+        gl.uniformMatrix4fv(shaderPD.pMatrixUniform, false, pMatrix);
+        gl.uniformMatrix4fv(shaderPD.mvMatrixUniform, false, mvMatrix);
+        gl.uniform3fv(shaderPD.lightPosUniform, lightPos);
+        gl.uniform3fv(shaderPD.camPosUniform, camPos);
+    } else if (useShaderPS) {
+        gl.uniformMatrix3fv(shaderPS.itmvMatrixUniform, false, ITmvMatrix);
+        gl.uniformMatrix4fv(shaderPS.pMatrixUniform, false, pMatrix);
+        gl.uniformMatrix4fv(shaderPS.mvMatrixUniform, false, mvMatrix);
+        gl.uniform3fv(shaderPS.lightPosUniform, lightPos);
+        gl.uniform3fv(shaderPS.camPosUniform, camPos);
     }
 }
 
@@ -219,29 +253,29 @@ function initBuffers() {
     // create and bind sphere buffer
     sphereVertices = Sphere.createSphereVertices(0.2, 24, 24);
 
-    colors = [
-        [0.996, 0.410, 0.379, 1.0],
-        [1.0, 0.5, 0.5, 1.0],
-        [1.0, 1.0, 0.988, 1.0],
-        [0.988, 0.988, 0.586, 1.0],
-        [0.793, 0.598, 0.785, 1.0],
-        [0.680, 0.773, 0.809, 1.0]
-    ];
-    unpackedColors = [];
-
-    for (i=0; i<sphereVertices.position.numElements; i++) {
-        color = colors[i%6];
-        unpackedColors = unpackedColors.concat(color);
-    }
-
     // colors = [
-    //     [1.0, 0.5, 0.5, 1.0]
+    //     [0.996, 0.410, 0.379, 1.0],
+    //     [1.0, 0.5, 0.5, 1.0],
+    //     [1.0, 1.0, 0.988, 1.0],
+    //     [0.988, 0.988, 0.586, 1.0],
+    //     [0.793, 0.598, 0.785, 1.0],
+    //     [0.680, 0.773, 0.809, 1.0]
     // ];
     // unpackedColors = [];
     //
     // for (i=0; i<sphereVertices.position.numElements; i++) {
-    //     unpackedColors = unpackedColors.concat(colors[0]);
+    //     color = colors[i%6];
+    //     unpackedColors = unpackedColors.concat(color);
     // }
+
+    colors = [
+        [1.0, 0.5, 0.5, 1.0]
+    ];
+    unpackedColors = [];
+
+    for (i=0; i<sphereVertices.position.numElements; i++) {
+        unpackedColors = unpackedColors.concat(colors[0]);
+    }
 
     sphereVertexPositionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, sphereVertexPositionBuffer);
@@ -303,6 +337,7 @@ function gd_shader() {
     shaderGD.mvMatrixUniform = gl.getUniformLocation(shaderGD, "uMVMatrix");
     shaderGD.lightPosUniform = gl.getUniformLocation(shaderGD, "uLightPos");
     shaderGD.itmvMatrixUniform = gl.getUniformLocation(shaderGD, "uMVInverseTransposeMatrix");
+    shaderGD.useLighting = gl.getUniformLocation(shaderGD, "uUseLighting");
 
     useShaderProgram = false;
     useshaderGD = true;
@@ -328,12 +363,65 @@ function gs_shader() {
     shaderGS.lightPosUniform = gl.getUniformLocation(shaderGS, "uLightPos");
     shaderGS.camPosUniform = gl.getUniformLocation(shaderGS, "uCamPos");
     shaderGS.itmvMatrixUniform = gl.getUniformLocation(shaderGS, "uMVInverseTransposeMatrix");
+    shaderGS.useLighting = gl.getUniformLocation(shaderGS, "uUseLighting");
 
     useShaderProgram = false;
     useshaderGD = false;
     useShaderGS = true;
     useShaderPD = false;
     useShaderPS = false;
+}
+
+function pd_shader() {
+    gl.useProgram(shaderPD);
+
+    shaderPD.vertexPositionAttribute = gl.getAttribLocation(shaderPD, "aVertexPosition");
+    gl.enableVertexAttribArray(shaderPD.vertexPositionAttribute);
+
+    shaderPD.vertexColorAttribute = gl.getAttribLocation(shaderPD, "aVertexColor");
+    gl.enableVertexAttribArray(shaderPD.vertexColorAttribute);
+
+    shaderPD.vertexNormalAttribute = gl.getAttribLocation(shaderPD, "aVertexNormal");
+    gl.enableVertexAttribArray(shaderPD.vertexNormalAttribute);
+
+    shaderPD.pMatrixUniform = gl.getUniformLocation(shaderPD, "uPMatrix");
+    shaderPD.mvMatrixUniform = gl.getUniformLocation(shaderPD, "uMVMatrix");
+    shaderPD.lightPosUniform = gl.getUniformLocation(shaderPD, "uLightPos");
+    shaderPD.camPosUniform = gl.getUniformLocation(shaderPD, "uCamPos");
+    shaderPD.itmvMatrixUniform = gl.getUniformLocation(shaderPD, "uMVInverseTransposeMatrix");
+    shaderPD.useLighting = gl.getUniformLocation(shaderPD, "uUseLighting");
+
+    useShaderProgram = false;
+    useshaderGD = false;
+    useShaderGS = false;
+    useShaderPD = true;
+    useShaderPS = false;
+}
+
+function ps_shader() {
+    gl.useProgram(shaderPS);
+
+    shaderPS.vertexPositionAttribute = gl.getAttribLocation(shaderPS, "aVertexPosition");
+    gl.enableVertexAttribArray(shaderPS.vertexPositionAttribute);
+
+    shaderPS.vertexColorAttribute = gl.getAttribLocation(shaderPS, "aVertexColor");
+    gl.enableVertexAttribArray(shaderPS.vertexColorAttribute);
+
+    shaderPS.vertexNormalAttribute = gl.getAttribLocation(shaderPS, "aVertexNormal");
+    gl.enableVertexAttribArray(shaderPS.vertexNormalAttribute);
+
+    shaderPS.pMatrixUniform = gl.getUniformLocation(shaderPS, "uPMatrix");
+    shaderPS.mvMatrixUniform = gl.getUniformLocation(shaderPS, "uMVMatrix");
+    shaderPS.lightPosUniform = gl.getUniformLocation(shaderPS, "uLightPos");
+    shaderPS.camPosUniform = gl.getUniformLocation(shaderPS, "uCamPos");
+    shaderPS.itmvMatrixUniform = gl.getUniformLocation(shaderPS, "uMVInverseTransposeMatrix");
+    shaderPS.useLighting = gl.getUniformLocation(shaderPS, "uUseLighting");
+
+    useShaderProgram = false;
+    useshaderGD = false;
+    useShaderGS = false;
+    useShaderPD = false;
+    useShaderPS = true;
 }
 
 function nolight_shader() {

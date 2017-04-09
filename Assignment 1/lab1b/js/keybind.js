@@ -40,6 +40,8 @@ function change_selection(key) {
         // obj_selection[10] is for the light source
         if (obj_selection[10]) {
             obj_selection[0] = true;
+            for (i=1; i<=9; i++)
+                obj_selection[i] = false;
             obj_selection[10] = false;
         } else {
             for (i=0; i<=9; i++)
@@ -49,6 +51,7 @@ function change_selection(key) {
     } else if (!obj_selection[key]) {
         obj_selection[0] = false;
         obj_selection[key] = true;
+        obj_selection[10] = false;
     } else {
         // if the key is selected, disable it
         obj_selection[key] = false;
@@ -90,13 +93,13 @@ function operate() {
         drawScene_3d();
     }
 
-    // if (map['o']) {
-    //     pd_shader();
-    //     drawScene_3d();
-    // }
-    //
-    // if (map['p']) {
-    //     ps_shader();
-    //     drawScene_3d();
-    // }
+    if (map['o']) {
+        pd_shader();
+        drawScene_3d();
+    }
+
+    if (map['p']) {
+        ps_shader();
+        drawScene_3d();
+    }
 }

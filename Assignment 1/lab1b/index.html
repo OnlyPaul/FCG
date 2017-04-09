@@ -51,19 +51,20 @@
         uniform mat4 uMVMatrix;
         uniform mat4 uPMatrix;
         uniform vec3 uLightPos;
+        uniform bool uUseLighting;
 
         varying vec4 vColor;
 
         void main(void) {
             vec3 MVVertex = vec3(uMVMatrix*vec4(aVertexPosition, 1.0));
             vec3 MVNormal = uMVInverseTransposeMatrix*aVertexNormal;
-            vec3 lightVector = normalize(uLightPos-MVVertex);
-            float diffuse = dot(MVNormal, lightVector);
-            //diffuse *= 0.3;
+            vec3 reverseLightVector = normalize(uLightPos-MVVertex);
+            float diffuse = dot(MVNormal, reverseLightVector);
 
             gl_Position = uPMatrix*uMVMatrix*vec4(aVertexPosition, 1.0);
             vColor = aVertexColor;
-            vColor.rgb *= diffuse;
+            if (uUseLighting)
+                vColor.rgb *= diffuse;
         }
     </script>
     <script id="gs-vertex" type="x-shader/x-vertex">
@@ -76,28 +77,108 @@
         uniform mat4 uPMatrix;
         uniform vec3 uLightPos;
         uniform vec3 uCamPos;
+        uniform bool uUseLighting;
 
         varying vec4 vColor;
 
         void main(void) {
             vec3 MVVertex = vec3(uMVMatrix*vec4(aVertexPosition, 1.0));
             vec3 MVNormal = uMVInverseTransposeMatrix*aVertexNormal;
-            vec3 lightVector = normalize(uLightPos-MVVertex);
+            vec3 reverseLightVector = normalize(uLightPos-MVVertex);
             vec3 surfaceToViewVector = normalize(uCamPos-MVVertex);
-            vec3 halfVector = normalize(lightVector + surfaceToViewVector);
+            vec3 halfVector = normalize(reverseLightVector + surfaceToViewVector);
 
-            float diffuse = dot(MVNormal, lightVector);
-            //diffuse *= 0.3;
+            float diffuse = dot(MVNormal, reverseLightVector);
 
             float specular = 0.0;
             if (diffuse > 0.0)
-                specular = pow(dot(MVNormal, halfVector), 70.0);
+                specular = pow(dot(MVNormal, halfVector), 30.0);
             specular *= 0.6;
 
             gl_Position = uPMatrix*uMVMatrix*vec4(aVertexPosition, 1.0);
             vColor = aVertexColor;
-            vColor.rgb *= diffuse;
-            vColor.rgb += specular;
+            if (uUseLighting) {
+                vColor.rgb *= diffuse;
+                vColor.rgb += specular;
+            }
+        }
+    </script>
+    <script id="phong-vertex" type="x-shader/x-vertex">
+        attribute vec3 aVertexPosition;
+        attribute vec3 aVertexNormal;
+        attribute vec4 aVertexColor;
+
+        uniform mat3 uMVInverseTransposeMatrix;
+        uniform mat4 uMVMatrix;
+        uniform mat4 uPMatrix;
+        uniform vec3 uLightPos;
+        uniform vec3 uCamPos;
+
+        varying vec3 vMVNormal;
+        varying vec3 vReverseLightVector;
+        varying vec3 vReflectionVector;
+        varying vec3 vSurfaceToViewVector;
+        varying vec4 vColor;
+
+        void main(void) {
+            vec3 MVVertex = vec3(uMVMatrix*vec4(aVertexPosition, 1.0));
+            vMVNormal = uMVInverseTransposeMatrix*aVertexNormal;
+            vReverseLightVector = normalize(uLightPos-MVVertex);
+            vSurfaceToViewVector = normalize(uCamPos-MVVertex);
+            vReflectionVector = normalize((2.0*vMVNormal)-vReverseLightVector);
+
+            gl_Position = uPMatrix*uMVMatrix*vec4(aVertexPosition, 1.0);
+            vColor = aVertexColor;
+        }
+    </script>
+    <script id="pd-fragment" type="x-shader/x-fragment">
+        precision mediump float;
+
+        uniform bool uUseLighting;
+
+        // passed from vertex shader
+        varying vec3 vMVNormal;
+        varying vec3 vReverseLightVector;
+
+        varying vec4 vColor;
+
+        void main(void) {
+            float diffuse = dot(vMVNormal, vReverseLightVector);
+
+            gl_FragColor = vColor;
+
+            if (uUseLighting)
+                gl_FragColor.rgb *= diffuse;
+        }
+    </script>
+    <script id="ps-fragment" type="x-shader/x-fragment">
+        precision mediump float;
+
+        uniform bool uUseLighting;
+
+        // passed from vertex shader
+        varying vec3 vMVNormal;
+        varying vec3 vReverseLightVector;
+        varying vec3 vReflectionVector;
+        varying vec3 vSurfaceToViewVector;
+
+        varying vec4 vColor;
+
+        void main(void) {
+            float diffuse = dot(vMVNormal, vReverseLightVector);
+            diffuse = diffuse > 0.0 ? diffuse : 0.0;
+
+            float specular = 0.0;
+            if (diffuse > 0.0)
+                specular = pow(dot(vReflectionVector, vSurfaceToViewVector), 30.0);
+            specular *= 0.6;
+            specular = specular > 0.0 ? specular : 0.0;
+
+            gl_FragColor = vColor;
+            if (uUseLighting) {
+                gl_FragColor.rgb *= diffuse;
+                gl_FragColor.rgb += specular;
+            }
         }
     </script>
 </head>
